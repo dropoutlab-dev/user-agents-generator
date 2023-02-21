@@ -1,0 +1,25 @@
+{
+  "name": "user-agents-generator",
+  "version": "1.0.0",
+  "description": "A Minimal Package to Generate unlimited user agents",
+  "main": "index.js",
+  "homepage": "https://github.com/dropoutlab-dev/user-agents-generator#readme",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "user-agents",
+    "nodejs",
+    "javaScript"
+  ],
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "DropOutLab <dropoutlab@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:dropoutlab-dev/user-agents-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rdropoutlab-dev/user-agents-generator/issues"
+  }
+}
