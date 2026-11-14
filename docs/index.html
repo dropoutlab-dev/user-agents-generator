@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>user-agents-generator — UA strings, dataset-sourced</title>
+<meta name="description" content="Generate realistic User-Agent strings for desktop and mobile browsers. Dataset-sourced, traffic-weighted, zero dependencies. ESM + CJS + TypeScript." />
+<meta property="og:title" content="user-agents-generator" />
+<meta property="og:description" content="Realistic UA strings — dataset-sourced & traffic-weighted." />
+<meta property="og:url" content="https://dropoutlab-dev.github.io/user-agents-generator/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c5cff'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='52' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* ───────── tokens ───────── */
+  :root{
+    --bg:#08080c;
+    --panel:#0e0e14;
+    --panel-2:#12121a;
+    --panel-3:#181822;
+    --border:#1e1e2a;
+    --border-2:#2a2a3a;
+    --text:#e6e6ef;
+    --text-dim:#9a9aab;
+    --text-mute:#5c5c6e;
+    --accent:#7c5cff;
+    --accent-2:#a78bfa;
+    --accent-soft:rgba(124,92,255,.12);
+    --green:#34d399;
+    --red:#f87171;
+    --yellow:#fbbf24;
+    --blue:#60a5fa;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    --radius:10px;
+    --radius-sm:6px;
+    --shadow:0 8px 32px rgba(0,0,0,.45);
+    --rail-w:240px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font:400 14px/1.55 var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{color:#c4b5fd}
+  code,kbd{font-family:var(--mono);font-size:.88em}
+  code{background:var(--accent-soft);color:#c4b5fd;padding:.12em .38em;border-radius:4px;border:1px solid rgba(124,92,255,.18)}
+  kbd{background:var(--panel-3);border:1px solid var(--border-2);border-bottom-width:2px;border-radius:4px;padding:.08em .4em;font-size:.78em;color:var(--text-dim)}
+  img{max-width:100%;height:auto;display:inline-block;vertical-align:middle}
+  h1,h2,h3,h4{font-weight:600;letter-spacing:-.02em;line-height:1.25}
+  h2{font-size:1.35rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+  h3{font-size:.95rem;margin-bottom:.3rem}
+  ::selection{background:rgba(124,92,255,.35);color:#fff}
+
+  /* ───────── layout ───────── */
+  .app{display:flex;min-height:100vh}
+
+  /* ───────── left rail ───────── */
+  .rail{
+    position:fixed;inset:0 auto 0 0;width:var(--rail-w);
+    background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;z-index:40;
+  }
+  .rail-head{
+    display:flex;align-items:center;gap:.6rem;
+    padding:1rem 1rem .75rem;border-bottom:1px solid var(--border);
+  }
+  .rail-mark{
+    width:26px;height:26px;border-radius:7px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid;place-items:center;color:#fff;font-family:var(--mono);
+    font-size:.75rem;font-weight:700;flex-shrink:0;
+  }
+  .rail-title{font-size:.82rem;font-weight:600;line-height:1.2}
+  .rail-title span{display:block;font-size:.7rem;font-weight:400;color:var(--text-mute);font-family:var(--mono)}
+  .rail-nav{padding:.75rem .5rem;overflow-y:auto;flex:1}
+  .rail-group{margin-bottom:1rem}
+  .rail-group-label{
+    font-family:var(--mono);font-size:.65rem;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);
+    padding:.25rem .65rem;margin-bottom:.15rem;
+  }
+  .rail-link{
+    display:flex;align-items:center;gap:.55rem;
+    padding:.4rem .65rem;border-radius:var(--radius-sm);
+    color:var(--text-dim);font-size:.82rem;font-weight:500;
+    transition:background .12s,color .12s;
+  }
+  .rail-link:hover{background:var(--panel-3);color:var(--text)}
+  .rail-link.active{background:var(--accent-soft);color:#c4b5fd}
+  .rail-link .ico{width:16px;text-align:center;font-size:.9rem;flex-shrink:0;opacity:.9}
+  .rail-link .badge{
+    margin-left:auto;font-family:var(--mono);font-size:.62rem;
+    background:var(--panel-3);border:1px solid var(--border);
+    border-radius:4px;padding:.05em .35em;color:var(--text-mute);
+  }
+  .rail-foot{
+    border-top:1px solid var(--border);padding:.6rem .75rem;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:.7rem;color:var(--text-mute);
+  }
+  .rail-foot a{color:var(--text-dim)}
+  .rail-foot a:hover{color:var(--accent-2)}
+
+  /* ───────── main ───────── */
+  .main{margin-left:var(--rail-w);flex:1;min-width:0;display:flex;flex-direction:column}
+
+  /* top bar */
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    display:flex;align-items:center;gap:.75rem;
+    padding:.55rem 1.5rem;
+    background:rgba(8,8,12,.82);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .crumb{font-family:var(--mono);font-size:.72rem;color:var(--text-mute);white-space:nowrap}
+  .crumb b{color:var(--text-dim);font-weight:500}
+  .search{
+    flex:1;max-width:360px;display:flex;align-items:center;gap:.45rem;
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:.3rem .55rem;
+    color:var(--text-mute);font-size:.75rem;cursor:pointer;
+    transition:border-color .12s;
+  }
+  .search:hover{border-color:var(--border-2)}
+  .search .k{margin-left:auto;display:flex;gap:.2rem}
+  .topbar-actions{display:flex;align-items:center;gap:.4rem;margin-left:auto}
+  .icon-btn{
+    display:grid;place-items:center;width:30px;height:30px;
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);color:var(--text-dim);
+    font-size:.85rem;cursor:pointer;transition:all .12s;
+  }
+  .icon-btn:hover{border-color:var(--border-2);color:var(--text)}
+  .menu-toggle{display:none}
+
+  /* content wrapper */
+  .content{max-width:960px;width:100%;margin:0 auto;padding:2.5rem 2rem 6rem}
+  section{padding:2.5rem 0;border-bottom:1px solid var(--border);scroll-margin-top:70px}
+  section:last-of-type{border-bottom:none}
+  .sec-meta{
+    display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;
+    font-family:var(--mono);font-size:.68rem;color:var(--text-mute);
+    text-transform:uppercase;letter-spacing:.08em;
+  }
+  .sec-meta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .sec-lead{color:var(--text-dim);font-size:.88rem;margin-bottom:1.25rem;max-width:640px}
+
+  /* ───────── terminal hero ───────── */
+  .hero{padding-top:1rem}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:.45rem;
+    font-family:var(--mono);font-size:.7rem;color:var(--accent-2);
+    background:var(--accent-soft);border:1px solid rgba(124,92,255,.25);
+    border-radius:999px;padding:.25rem .7rem;margin-bottom:1rem;
+  }
+  .hero-eyebrow .live{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2.2s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .hero h1{font-size:clamp(1.7rem,3.6vw,2.6rem);margin-bottom:.85rem;font-weight:700}
+  .hero h1 .grad{background:linear-gradient(100deg,#c4b5fd,var(--accent-2) 40%,var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero .lead{color:var(--text-dim);font-size:.95rem;max-width:600px;margin-bottom:1.5rem}
+
+  /* terminal window */
+  .term{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+    margin:1.25rem 0 1.5rem;
+  }
+  .term-bar{
+    display:flex;align-items:center;gap:.4rem;
+    padding:.5rem .75rem;background:var(--panel-2);
+    border-bottom:1px solid var(--border);
+  }
+  .term-dot{width:9px;height:9px;border-radius:50%}
+  .term-dot.r{background:#ff5f57}.term-dot.y{background:#febc2e}.term-dot.g{background:#28c840}
+  .term-tab{
+    margin-left:.6rem;font-family:var(--mono);font-size:.68rem;
+    color:var(--text-mute);display:flex;gap:.75rem;
+  }
+  .term-tab span{padding:.15rem .4rem;border-radius:4px}
+  .term-tab .on{background:var(--panel-3);color:var(--text-dim)}
+  .term-body{padding:1rem 1.1rem;font-family:var(--mono);font-size:.8rem;line-height:1.75;overflow-x:auto}
+  .term-body .ln{display:block;white-space:pre}
+  .term-body .prompt{color:var(--green);user-select:none;margin-right:.5rem}
+  .term-body .cmd{color:var(--text)}
+  .term-body .out{color:var(--text-mute)}
+  .term-body .hi{color:var(--accent-2)}
+  .term-body .ok{color:var(--green)}
+  .cursor{display:inline-block;width:7px;height:14px;background:var(--accent-2);vertical-align:middle;animation:blink 1s steps(1) infinite}
+
+  /* quick actions */
+  .quick{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+  .btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:var(--mono);font-size:.75rem;font-weight:500;
+    padding:.5rem .9rem;border-radius:var(--radius-sm);
+    border:1px solid var(--border-2);background:var(--panel);
+    color:var(--text-dim);cursor:pointer;transition:all .12s;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--text)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);color:#08080c}
+
+  /* ───────── install ───────── */
+  .install-tabs{display:flex;gap:.25rem;margin-bottom:.6rem;flex-wrap:wrap}
+  .install-tabs button{
+    font-family:var(--mono);font-size:.7rem;padding:.3rem .7rem;
+    background:transparent;border:1px solid transparent;border-radius:4px;
+    color:var(--text-mute);cursor:pointer;
+  }
+  .install-tabs button:hover{color:var(--text-dim)}
+  .install-tabs button.on{background:var(--panel-3);border-color:var(--border);color:var(--accent-2)}
+  .copyline{
+    position:relative;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:.7rem .9rem;padding-right:4rem;
+    font-family:var(--mono);font-size:.8rem;color:var(--text);
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .copyline .p{color:var(--green);user-select:none}
+  .copy-btn{
+    position:absolute;top:50%;right:.5rem;transform:translateY(-50%);
+    background:var(--panel-3);border:1px solid var(--border);border-radius:4px;
+    color:var(--text-dim);font-family:var(--mono);font-size:.65rem;
+    padding:.25rem .5rem;cursor:pointer;
+  }
+  .copy-btn:hover{color:var(--accent-2);border-color:var(--accent)}
+
+  /* ───────── feature grid (dense) ───────── */
+  .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem}
+  @media(max-width:700px){.fgrid{grid-template-columns:1fr}}
+  .fcard{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:.9rem 1rem;
+    transition:border-color .12s,background .12s;
+  }
+  .fcard:hover{border-color:var(--border-2);background:var(--panel-2)}
+  .fcard-head{display:flex;align-items:center;gap:.45rem;margin-bottom:.35rem}
+  .fcard-head .ico{font-size:.95rem}
+  .fcard-head h3{font-size:.82rem;margin:0}
+  .fcard p{font-size:.78rem;color:var(--text-dim);line-height:1.5}
+  .fcard code{font-size:.8em}
+
+  /* ───────── api tables (dense) ───────── */
+  .api-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:1.25rem}
+  .api-table th{
+    text-align:left;font-family:var(--mono);font-size:.66rem;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);
+    padding:.45rem .65rem;border-bottom:1px solid var(--border-2);
+  }
+  .api-table td{padding:.5rem .65rem;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top}
+  .api-table tr:last-child td{border-bottom:none}
+  .api-table tr:hover td{background:var(--panel-2)}
+  .api-table td:first-child{font-family:var(--mono);font-size:.78rem;color:var(--text);white-space:nowrap}
+
+  /* ───────── callout ───────── */
+  .callout{
+    display:flex;gap:.6rem;padding:.7rem .9rem;margin:1rem 0;
+    background:var(--panel);border:1px solid var(--border);
+    border-left:2px solid var(--accent);border-radius:var(--radius-sm);
+    font-size:.8rem;color:var(--text-dim);
+  }
+  .callout .ic{flex-shrink:0;font-size:.9rem}
+  .callout strong{color:var(--text)}
+  .callout code{font-size:.82em}
+
+  /* ───────── migrate ───────── */
+  .migrate{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  @media(max-width:640px){.migrate{grid-template-columns:1fr}}
+  .migrate-col{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem}
+  .migrate-col.bad{border-left:2px solid var(--red)}
+  .migrate-col.good{border-left:2px solid var(--green)}
+  .migrate-col h3{display:flex;align-items:center;gap:.35rem;font-size:.8rem;margin-bottom:.6rem}
+  .migrate-col ul{list-style:none;padding:0}
+  .migrate-col li{font-size:.78rem;color:var(--text-dim);padding:.25rem 0;display:flex;gap:.4rem}
+  .migrate-col.bad li::before{content:"✗";color:var(--red);font-family:var(--mono);flex-shrink:0}
+  .migrate-col.good li::before{content:"✓";color:var(--green);font-family:var(--mono);flex-shrink:0}
+
+  /* ───────── contrib ───────── */
+  .contrib{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+  @media(max-width:720px){.contrib{grid-template-columns:repeat(2,1fr)}}
+  .contrib a{
+    display:flex;flex-direction:column;align-items:center;gap:.3rem;
+    padding:.75rem .5rem;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);font-size:.75rem;font-weight:500;
+    color:var(--text-dim);text-align:center;transition:all .12s;
+  }
+  .contrib a:hover{border-color:var(--accent);color:var(--text);background:var(--panel-2)}
+  .contrib a .ico{font-size:1rem}
+
+  /* ───────── footer ───────── */
+  footer{padding:1.5rem 0 0;border-top:1px solid var(--border);margin-top:1rem}
+  .foot-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;font-size:.72rem;color:var(--text-mute)}
+  .foot-links{display:flex;flex-wrap:wrap;gap:1rem}
+  .foot-links a{color:var(--text-dim)}
+  .foot-links a:hover{color:var(--accent-2)}
+
+  /* ───────── command palette ───────── */
+  .palette-overlay{
+    position:fixed;inset:0;background:rgba(4,4,8,.72);
+    backdrop-filter:blur(6px);z-index:100;display:none;
+    align-items:flex-start;justify-content:center;padding-top:12vh;
+  }
+  .palette-overlay.on{display:flex}
+  .palette{
+    width:min(560px,92vw);background:var(--panel);
+    border:1px solid var(--border-2);border-radius:var(--radius);
+    box-shadow:0 24px 80px rgba(0,0,0,.7);overflow:hidden;
+  }
+  .palette-input{
+    width:100%;background:transparent;border:none;outline:none;
+    padding:.9rem 1rem;font-family:var(--mono);font-size:.85rem;color:var(--text);
+    border-bottom:1px solid var(--border);
+  }
+  .palette-input::placeholder{color:var(--text-mute)}
+  .palette-list{max-height:320px;overflow-y:auto;padding:.35rem}
+  .palette-item{
+    display:flex;align-items:center;gap:.55rem;
+    padding:.45rem .65rem;border-radius:var(--radius-sm);
+    font-size:.8rem;color:var(--text-dim);cursor:pointer;
+  }
+  .palette-item:hover,.palette-item.sel{background:var(--accent-soft);color:var(--text)}
+  .palette-item .k{margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--text-mute)}
+
+  /* ───────── responsive ───────── */
+  @media(max-width:900px){
+    :root{--rail-w:0px}
+    .rail{transform:translateX(-100%);transition:transform .2s;width:240px}
+    .rail.open{transform:translateX(0)}
+    .main{margin-left:0}
+    .menu-toggle{display:grid}
+    .content{padding:1.75rem 1.1rem 4rem}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LEFT RAIL ══════════ -->
+<aside class="rail" id="rail">
+  <div class="rail-head">
+    <div class="rail-mark">U</div>
+    <div class="rail-title">
+      user-agents-generator
+      <span>v2.0.0 · node ≥20</span>
+    </div>
+  </div>
+
+  <nav class="rail-nav">
+    <div class="rail-group">
+      <div class="rail-group-label">Overview</div>
+      <a class="rail-link active" href="#top"><span class="ico">◆</span> Introduction</a>
+      <a class="rail-link" href="#install"><span class="ico">↓</span> Install <span class="badge">npm</span></a>
+      <a class="rail-link" href="#features"><span class="ico">✦</span> Features</a>
+    </div>
+    <div class="rail-group">
+      <div class="rail-group-label">API</div>
+      <a class="rail-link" href="#api-legacy"><span class="ico">ƒ</span> Legacy methods</a>
+      <a class="rail-link" href="#api-v2"><span class="ico">+</span> v2 additions</a>
+      <a class="rail-link" href="#api-generate"><span class="ico">⚙</span> generate()</a>
+      <a class="rail-link" href="#api-headers"><span class="ico">▤</span> headers()</a>
+    </div>
+    <div class="rail-group">
+      <div class="rail-group-label">Guides</div>
+      <a class="rail-link" href="#why"><span class="ico">?</span> Why v2</a>
+      <a class="rail-link" href="#migrate"><span class="ico">⇄</span> Migrate from v1</a>
+      <a class="rail-link" href="#contribute"><span class="ico">⌥</span> Contributing</a>
+    </div>
+    <div class="rail-group">
+      <div class="rail-group-label">Resources</div>
+      <a class="rail-link" href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener"><span class="ico">↗</span> npm package</a>
+      <a class="rail-link" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener"><span class="ico">↗</span> GitHub repo</a>
+      <a class="rail-link" href="/llms.txt" target="_blank" rel="noopener"><span class="ico">∎</span> llms.txt</a>
+    </div>
+  </nav>
+
+  <div class="rail-foot">
+    <span>MIT licensed</span>
+    <a href="https://github.com/dropoutlab-dev" target="_blank" rel="noopener">@dropoutlab-dev</a>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- top bar -->
+  <div class="topbar">
+    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+    <div class="crumb"><b>docs</b> / <span id="crumbCurrent">introduction</span></div>
+    <div class="search" id="searchTrigger" role="button" tabindex="0">
+      <span>⌕</span><span>Search docs…</span>
+      <span class="k"><kbd>⌘</kbd><kbd>K</kbd></span>
+    </div>
+    <div class="topbar-actions">
+      <a class="icon-btn" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener" aria-label="GitHub">⌂</a>
+      <a class="icon-btn" href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener" aria-label="npm">◫</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════ HERO ══════════ -->
+    <section id="top" class="hero">
+      <div class="hero-eyebrow"><span class="live"></span> dataset synced · daily</div>
+      <h1>Realistic UA strings,<br/><span class="grad">generated not guessed.</span></h1>
+      <p class="lead">
+        Stop shipping Chrome 80 in 2025. <code>user-agents-generator</code> sources UA strings from a
+        maintained, traffic‑weighted dataset — with a graceful template fallback that never returns <code>""</code>.
+      </p>
+
+      <!-- terminal -->
+      <div class="term" aria-label="Terminal example">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <div class="term-tab"><span class="on">zsh</span><span>node</span></div>
+        </div>
+        <div class="term-body" id="termBody">
+          <span class="ln"><span class="prompt">❯</span><span class="cmd">npm i user-agents-generator</span></span>
+          <span class="ln out">added 1 package, 0 dependencies · 412 ms</span>
+          <span class="ln"><span class="prompt">❯</span><span class="cmd">node --input-type=module</span></span>
+          <span class="ln out">&gt; import { chrome, headers } from 'user-agents-generator'</span>
+          <span class="ln out">&gt; chrome()</span>
+          <span class="ln hi">'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'</span>
+          <span class="ln out">&gt; headers()['User-Agent'] === chrome()</span>
+          <span class="ln ok">true</span>
+          <span class="ln"><span class="prompt">❯</span><span class="cursor"></span></span>
+        </div>
+      </div>
+
+      <div class="quick">
+        <a class="btn btn-primary" href="#install">↓ Get started</a>
+        <a class="btn" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">⌂ Star on GitHub</a>
+        <button class="btn" id="openPalette">⌘K Command palette</button>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:1rem">
+        <img src="https://img.shields.io/npm/v/user-agents-generator?style=flat-square&label=npm&color=7c5cff&labelColor=12121a" alt="npm" />
+        <img src="https://img.shields.io/badge/deps-0-34d399?style=flat-square&labelColor=12121a" alt="deps" />
+        <img src="https://img.shields.io/badge/node-%E2%89%A520-34d399?style=flat-square&labelColor=12121a" alt="node" />
+        <img src="https://img.shields.io/badge/ESM%20%2B%20CJS-✓-7c5cff?style=flat-square&labelColor=12121a" alt="modules" />
+        <img src="https://img.shields.io/badge/types-included-60a5fa?style=flat-square&labelColor=12121a" alt="types" />
+      </div>
+    </section>
+
+    <!-- ══════════ INSTALL ══════════ -->
+    <section id="install">
+      <div class="sec-meta">01 · Setup</div>
+      <h2>↓ Install</h2>
+      <p class="sec-lead">One package. Zero runtime dependencies. Pick your package manager.</p>
+
+      <div class="install-tabs" role="tablist">
+        <button class="on" data-pm="npm" role="tab" aria-selected="true">npm</button>
+        <button data-pm="pnpm" role="tab" aria-selected="false">pnpm</button>
+        <button data-pm="yarn" role="tab" aria-selected="false">yarn</button>
+        <button data-pm="bun" role="tab" aria-selected="false">bun</button>
+      </div>
+      <div class="copyline">
+        <span class="p">$</span><span id="installCmd">npm install user-agents-generator</span>
+        <button class="copy-btn" data-copy="npm install user-agents-generator">copy</button>
+      </div>
+      <div class="callout"><span class="ic">ℹ</span><div><strong>Requires Node ≥ 20.</strong> Node 18 is end‑of‑life. The package ships <code>.d.ts</code>, works in both CJS and ESM, and has <strong>no postinstall script</strong>.</div></div>
+    </section>
+
+    <!-- ══════════ FEATURES ══════════ -->
+    <section id="features">
+      <div class="sec-meta">02 · Capabilities</div>
+      <h2>✦ Features</h2>
+      <p class="sec-lead">Everything a scraping, testing, or automation pipeline needs — nothing it doesn't.</p>
+      <div class="fgrid">
+        <div class="fcard"><div class="fcard-head"><span class="ico">📦</span><h3>Zero dependencies</h3></div><p>No transitive supply chain. No postinstall. Nothing to audit beyond the source you can read.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🛡️</span><h3>Header‑injection safe</h3></div><p><code>headers()</code> rejects CR, LF, control characters, empty strings, and anything over 512 chars.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🌐</span><h3>Traffic‑weighted</h3></div><p>Chrome appears as often as it does in the wild. Opera does not appear as often as Chrome.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🚀</span><h3>Loaded once</h3></div><p>The dataset is resolved at require‑time, not per call. No repeated I/O inside your hot loop.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🧪</span><h3>Tested on CI</h3></div><p><code>node:test</code> + GitHub Actions matrix on Node 20, 22, and 24. Audit runs on every push.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🅣</span><h3>Types shipped</h3></div><p><code>.d.ts</code> included. No <code>@types/</code> package to install, no <code>any</code> leakage.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🔁</span><h3>Single instance</h3></div><p><code>index.mjs</code> re‑exports <code>index.cjs</code>. CJS and ESM consumers share one dataset copy.</p></div>
+        <div class="fcard"><div class="fcard-head"><span class="ico">🍂</span><h3>Fails safe</h3></div><p>If the dataset cannot resolve, frozen 2025 templates take over. The return value is never <code>""</code>.</p></div>
+      </div>
+    </section>
+
+    <!-- ══════════ API — LEGACY ══════════ -->
+    <section id="api-legacy">
+      <div class="sec-meta">03 · API</div>
+      <h2>ƒ Legacy methods</h2>
+      <p class="sec-lead">Unchanged names and signatures from v1. Upgrading does not require code changes.</p>
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>chrome()</td><td>Chrome on desktop</td></tr>
+          <tr><td>firefox()</td><td>Firefox on desktop</td></tr>
+          <tr><td>safari()</td><td>Safari on Apple platforms only — <strong>never Chromium‑family</strong></td></tr>
+          <tr><td>android()</td><td>Chrome on Android</td></tr>
+          <tr><td>ios()</td><td>Safari on iOS</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════ API — v2 ══════════ -->
+    <section id="api-v2">
+      <div class="sec-meta">03.1 · API</div>
+      <h2>+ Added in v2</h2>
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>edge()</td><td>Microsoft Edge on desktop</td></tr>
+          <tr><td>opera()</td><td>Opera on desktop</td></tr>
+          <tr><td>random()</td><td>Any family, weighted by the dataset</td></tr>
+          <tr><td>generate(options?)</td><td>A UA matching the given constraints</td></tr>
+          <tr><td>headers(ua?)</td><td>Object containing <code>User-Agent</code> and companion headers</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════ generate() ══════════ -->
+    <section id="api-generate">
+      <div class="sec-meta">03.2 · API</div>
+      <h2>⚙ generate(options)</h2>
+      <p class="sec-lead">All fields optional. Constraints are regex‑escaped before matching, so arbitrary strings are safe.</p>
+      <table class="api-table">
+        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>browser</td><td>string</td><td>Family name or literal substring — <code>chrome</code>, <code>firefox</code>, <code>safari</code>, <code>edge</code>, <code>opera</code>, <code>android</code>, <code>ios</code></td></tr>
+          <tr><td>os</td><td>string</td><td><code>windows</code>, <code>macos</code>, <code>linux</code>, <code>android</code>, <code>ios</code>, or any literal substring</td></tr>
+          <tr><td>device</td><td>string</td><td><code>desktop</code>, <code>mobile</code>, or <code>tablet</code></td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><span class="ic">💡</span><div><strong>Safe by design.</strong> <code>generate({ browser: 'chrome(' })</code> does not throw. A constraint that matches nothing falls back to an unconstrained draw. Non‑object input throws <code>TypeError</code>.</div></div>
+    </section>
+
+    <!-- ══════════ headers() ══════════ -->
+    <section id="api-headers">
+      <div class="sec-meta">03.3 · API</div>
+      <h2>▤ headers(ua?)</h2>
+      <p class="sec-lead">Returns a ready‑to‑send header object. Validates the UA it is given.</p>
+      <table class="api-table">
+        <thead><tr><th>Behaviour</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Valid input</td><td>Returns <code>{ 'User-Agent', Accept, 'Accept-Language', 'Accept-Encoding' }</code></td></tr>
+          <tr><td>Invalid input</td><td>Throws <code>TypeError</code> on CR, LF, control chars, empty strings, or &gt; 512 characters</td></tr>
+          <tr><td>Why reject?</td><td>Silently stripping a CRLF would hide a header‑injection attempt</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════ WHY ══════════ -->
+    <section id="why">
+      <div class="sec-meta">04 · Context</div>
+      <h2>? Why v2</h2>
+      <p class="sec-lead">v1.0.2 was ~3 years unmaintained. Its hard‑coded UA ranges described browsers nobody runs any more.</p>
+      <div class="migrate">
+        <div class="migrate-col bad">
+          <h3>v1 · problems</h3>
+          <ul>
+            <li>Hard‑coded Chrome 60–80</li>
+            <li>Version ranges rot over time</li>
+            <li><code>safari()</code> sometimes returned Chrome</li>
+            <li>No tests, types, ESM, or CI</li>
+            <li>README install command was wrong</li>
+          </ul>
+        </div>
+        <div class="migrate-col good">
+          <h3>v2 · fixes</h3>
+          <ul>
+            <li>Dataset‑sourced, updated daily</li>
+            <li>Traffic‑weighted selection</li>
+            <li><code>safari()</code> is predicate‑filtered</li>
+            <li><code>node:test</code>, CI, types, ESM</li>
+            <li>Metadata and docs corrected</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ MIGRATE ══════════ -->
+    <section id="migrate">
+      <div class="sec-meta">05 · Upgrade</div>
+      <h2>⇄ Migrate from v1</h2>
+      <p class="sec-lead">Upgrading is a version bump — no code changes are required for the legacy API.</p>
+      <table class="api-table">
+        <thead><tr><th>v1</th><th>v2</th></tr></thead>
+        <tbody>
+          <tr><td><code>npm i user-agent-generator</code> ⚠</td><td><code>npm i user-agents-generator</code> ✓</td></tr>
+          <tr><td>Node.js any version</td><td>Node.js ≥ 20</td></tr>
+          <tr><td>Hard‑coded UA ranges</td><td>Dataset‑sourced, daily</td></tr>
+          <tr><td>No tests / CI / types</td><td><code>node:test</code> · Actions · <code>.d.ts</code></td></tr>
+          <tr><td><code>safari()</code> could return Chrome</td><td><code>safari()</code> is Safari only</td></tr>
+          <tr><td>CommonJS only</td><td>CommonJS + ESM</td></tr>
+        </tbody>
+      </table>
+      <div class="callout"><span class="ic">⚠</span><div>UA strings are <strong>not byte‑identical</strong> to v1 — they now describe current browsers.</div></div>
+    </section>
+
+    <!-- ══════════ CONTRIBUTE ══════════ -->
+    <section id="contribute">
+      <div class="sec-meta">06 · Community</div>
+      <h2>⌥ Contributing</h2>
+      <p class="sec-lead">Issues, docs, tests, and features are all welcome. Read the checklist before opening a PR.</p>
+      <div class="contrib">
+        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues/new" target="_blank" rel="noopener"><span class="ico">🐛</span> Report a bug</a>
+        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues/new" target="_blank" rel="noopener"><span class="ico">💡</span> Request a feature</a>
+        <a href="https://github.com/dropoutlab-dev/user-agents-generator/pulls" target="_blank" rel="noopener"><span class="ico">⌥</span> Open a PR</a>
+        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues" target="_blank" rel="noopener"><span class="ico">?</span> Ask a question</a>
+      </div>
+      <div class="callout" style="margin-top:1rem"><span class="ic">✓</span><div><strong>Before you open a PR:</strong> fork → <code>npm ci &amp;&amp; npm test</code> → add tests → follow commit style → open the PR.</div></div>
+    </section>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer>
+      <div class="foot-row">
+        <div class="foot-links">
+          <a href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener">npm</a>
+          <a href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/dropoutlab-dev/user-agents-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>
+          <a href="/llms.txt" target="_blank" rel="noopener">llms.txt</a>
+          <a href="/robots.txt" target="_blank" rel="noopener">robots.txt</a>
+        </div>
+        <div>Made with ❤ by the open‑source community · <a href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">star the repo</a></div>
+      </div>
+    </footer>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══════════ COMMAND PALETTE ══════════ -->
+<div class="palette-overlay" id="paletteOverlay" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="palette">
+    <input class="palette-input" id="paletteInput" placeholder="Jump to section…" autocomplete="off" />
+    <div class="palette-list" id="paletteList">
+      <div class="palette-item" data-target="#top"><span>◆</span> Introduction <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#install"><span>↓</span> Install <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#features"><span>✦</span> Features <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#api-legacy"><span>ƒ</span> Legacy methods <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#api-v2"><span>+</span> v2 additions <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#api-generate"><span>⚙</span> generate() <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#api-headers"><span>▤</span> headers() <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#why"><span>?</span> Why v2 <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#migrate"><span>⇄</span> Migrate from v1 <span class="k">↵</span></div>
+      <div class="palette-item" data-target="#contribute"><span>⌥</span> Contributing <span class="k">↵</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- package-manager tabs ---------- */
+  var pmCmds = {
+    npm:  'npm install user-agents-generator',
+    pnpm: 'pnpm add user-agents-generator',
+    yarn: 'yarn add user-agents-generator',
+    bun:  'bun add user-agents-generator'
+  };
+  var tabs = document.querySelectorAll('.install-tabs button');
+  var cmdEl = document.getElementById('installCmd');
+  var copyBtn = document.querySelector('.copy-btn');
+  tabs.forEach(function(b){
+    b.addEventListener('click', function(){
+      tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
+      b.classList.add('on'); b.setAttribute('aria-selected','true');
+      var pm = b.dataset.pm;
+      cmdEl.textContent = pmCmds[pm];
+      copyBtn.dataset.copy = pmCmds[pm];
+    });
+  });
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.dataset.copy; if(!text) return;
+      var flash = function(){
+        var old = btn.textContent;
+        btn.textContent = 'copied';
+        setTimeout(function(){ btn.textContent = old; }, 1200);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(flash).catch(fallback);
+      } else { fallback(); }
+      function fallback(){
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); flash(); }catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  /* ---------- command palette ---------- */
+  var overlay = document.getElementById('paletteOverlay');
+  var input   = document.getElementById('paletteInput');
+  var list    = document.getElementById('paletteList');
+  var items   = Array.prototype.slice.call(list.querySelectorAll('.palette-item'));
+  var selected = 0;
+
+  function openPalette(){
+    overlay.classList.add('on');
+    input.value = '';
+    selected = 0;
+    render();
+    setTimeout(function(){ input.focus(); }, 30);
+  }
+  function closePalette(){
+    overlay.classList.remove('on');
+  }
+  function render(){
+    var q = input.value.toLowerCase().trim();
+    items.forEach(function(it){
+      it.style.display = it.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+    });
+    var visible = items.filter(function(it){ return it.style.display !== 'none'; });
+    if(selected >= visible.length) selected = 0;
+    items.forEach(function(it){ it.classList.remove('sel'); });
+    if(visible[selected]) visible[selected].classList.add('sel');
+  }
+  function goTo(target){
+    var el = document.querySelector(target);
+    if(el){ el.scrollIntoView({behavior:'smooth'}); }
+    closePalette();
+  }
+
+  input.addEventListener('input', render);
+  input.addEventListener('keydown', function(e){
+    var visible = items.filter(function(it){ return it.style.display !== 'none'; });
+    if(e.key === 'ArrowDown'){ e.preventDefault(); selected = Math.min(selected+1, visible.length-1); render(); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); selected = Math.max(selected-1, 0); render(); }
+    else if(e.key === 'Enter'){ e.preventDefault(); if(visible[selected]) goTo(visible[selected].dataset.target); }
+    else if(e.key === 'Escape'){ closePalette(); }
+  });
+  items.forEach(function(it){
+    it.addEventListener('click', function(){ goTo(it.dataset.target); });
+  });
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closePalette(); });
+
+  document.addEventListener('keydown', function(e){
+    if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); openPalette(); }
+    if(e.key === '/' && document.activeElement.tagName !== 'INPUT'){
+      e.preventDefault(); openPalette();
+    }
+    if(e.key === 'Escape') closePalette();
+  });
+  document.getElementById('openPalette').addEventListener('click', openPalette);
+  document.getElementById('searchTrigger').addEventListener('click', openPalette);
+  document.getElementById('searchTrigger').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openPalette(); }
+  });
+
+  /* ---------- mobile menu ---------- */
+  var rail = document.getElementById('rail');
+  document.getElementById('menuToggle').addEventListener('click', function(){
+    rail.classList.toggle('open');
+  });
+  rail.addEventListener('click', function(e){
+    if(e.target.closest('a') && window.innerWidth <= 900) rail.classList.remove('open');
+  });
+
+  /* ---------- active rail + crumb ---------- */
+  var sections = document.querySelectorAll('section[id]');
+  var railLinks = document.querySelectorAll('.rail-link');
+  var crumbCurrent = document.getElementById('crumbCurrent');
+  var crumbMap = {
+    'top':'introduction','install':'install','features':'features',
+    'api-legacy':'api / legacy','api-v2':'api / v2','api-generate':'api / generate',
+    'api-headers':'api / headers','why':'why v2','migrate':'migrate','contribute':'contributing'
+  };
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          var id = en.target.id;
+          railLinks.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#'+id); });
+          crumbCurrent.textContent = crumbMap[id] || id;
+        }
+      });
+    }, {rootMargin:'-30% 0px -60% 0px'});
+    sections.forEach(function(s){ io.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
