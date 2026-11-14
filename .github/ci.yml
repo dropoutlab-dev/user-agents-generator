@@ -1,0 +1,36 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Audit production dependencies
+        run: npm run audit
+      - name: Smoke test CJS entry
+        run: node -e "const ua=require('./index.cjs').chrome(); if(!ua||typeof ua!=='string') process.exit(1); console.log(ua);"
+      - name: Smoke test ESM entry
+        run: node --input-type=module -e "import('./index.mjs').then(m=>{const ua=m.default.edge(); if(!ua) process.exit(1); console.log(ua);});"
+      - name: Verify published file list
+        run: npm pack --dry-run
