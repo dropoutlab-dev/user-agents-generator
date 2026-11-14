@@ -1,25 +1,62 @@
 {
   "name": "user-agents-generator",
-  "version": "1.0.0",
-  "description": "A Minimal Package to Generate unlimited user agents",
-  "main": "index.js",
-  "homepage": "https://github.com/dropoutlab-dev/user-agents-generator#readme",
-  "private": false,
-  "license": "MIT",
-  "keywords": [
-    "user-agents",
-    "nodejs",
-    "javaScript"
-  ],
-  "scripts": {
-    "start": "node index.js"
+  "version": "2.0.0",
+  "description": "Generate realistic, dataset-backed user agent strings for Chrome, Firefox, Safari, Edge, Opera, Android and iOS",
+  "main": "index.cjs",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.cjs",
+      "default": "./index.cjs"
+    },
+    "./package.json": "./package.json"
   },
+  "files": [
+    "index.cjs",
+    "index.mjs",
+    "index.d.ts",
+    "lib/fallbacks.cjs",
+    "lib/helpers.cjs",
+    "Readme.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "audit": "npm audit --omit=dev",
+    "start": "node -e \"console.log(require('./index.cjs').random())\""
+  },
+  "keywords": [
+    "user-agent",
+    "user-agents",
+    "browser",
+    "chrome",
+    "firefox",
+    "safari",
+    "edge",
+    "opera",
+    "android",
+    "ios",
+    "scraping",
+    "automation",
+    "nodejs"
+  ],
   "author": "DropOutLab <dropoutlab@gmail.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:dropoutlab-dev/user-agents-generator.git"
+    "url": "git+https://github.com/dropoutlab-dev/user-agents-generator.git"
   },
   "bugs": {
-    "url": "https://github.com/rdropoutlab-dev/user-agents-generator/issues"
+    "url": "https://github.com/dropoutlab-dev/user-agents-generator/issues"
+  },
+  "homepage": "https://github.com/dropoutlab-dev/user-agents-generator#readme",
+  "dependencies": {
+    "user-agents": "^2.1.243"
   }
 }
