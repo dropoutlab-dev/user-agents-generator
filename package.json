@@ -27,7 +27,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.cjs",
     "audit": "npm audit --omit=dev",
     "start": "node -e \"console.log(require('./index.cjs').random())\""
   },
