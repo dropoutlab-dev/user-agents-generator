@@ -482,10 +482,10 @@ If `user-agents-generator` saves you time, please consider supporting its mainte
 
 <div align="center">
 
-<a href="https://github.com/sponsors/dropoutlab-dev">
+<a href="https://github.com/sponsors/shaonkabir8">
   <img src="https://img.shields.io/badge/💖_Sponsor_on_GitHub-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor" />
 </a>
-<a href="https://www.buymeacoffee.com/dropoutlab">
+<a href="https://buymeacoffee.com/shaonkabirk">
   <img src="https://img.shields.io/badge/☕_Buy_Me_a_Coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Coffee" />
 </a>
 
