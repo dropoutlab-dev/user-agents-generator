@@ -57,6 +57,6 @@
   },
   "homepage": "https://github.com/dropoutlab-dev/user-agents-generator#readme",
   "dependencies": {
-    "user-agents": "^2.1.243"
+    "user-agents": "^2.1.248"
   }
 }
