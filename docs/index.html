@@ -1,794 +1,3721 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>user-agents-generator — UA strings, dataset-sourced</title>
-<meta name="description" content="Generate realistic User-Agent strings for desktop and mobile browsers. Dataset-sourced, traffic-weighted, zero dependencies. ESM + CJS + TypeScript." />
-<meta property="og:title" content="user-agents-generator" />
-<meta property="og:description" content="Realistic UA strings — dataset-sourced & traffic-weighted." />
-<meta property="og:url" content="https://dropoutlab-dev.github.io/user-agents-generator/" />
-<meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%237c5cff'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='52' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>user-agents-generator — Realistic User-Agent strings, on demand</title>
+    <meta name="description" content="Dataset-backed, realistic User-Agent strings for Chrome, Firefox, Safari, Edge, Opera, Android and iOS. Zero-config Node.js module. MIT licensed.">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#fafafa">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; form-action 'self' https://buttondown.com; upgrade-insecure-requests">
+    <link rel="canonical" href="https://ua-generator.js.org/">
+    <link rel="alternate" type="text/markdown" href="./llms.txt" title="llms.txt — machine-readable index">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="user-agents-generator">
+    <meta property="og:title" content="user-agents-generator — Realistic User-Agent strings, on demand">
+    <meta property="og:description" content="Dataset-backed UA strings for Chrome, Firefox, Safari, Edge, Opera, Android and iOS. Zero dependencies, typed, header-injection safe.">
+    <meta property="og:url" content="https://ua-generator.js.org/" content="user-agents-generator">
+    <meta name="twitter:description" content="Dataset-backed, realistic User-Agent strings. Zero dependencies. MIT.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c5cff'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='14' font-weight='700' fill='%23fff' text-anchor='middle'%3Eua%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "user-agents-generator",
+            "softwareVersion": "2.0.0",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Node.js 20+",
+            "description": "Zero-dependency Node.js module that returns realistic, dataset-backed User-Agent strings for Chrome, Firefox, Safari, Edge, Opera, Android and iOS.",
+            "license": "https://opensource.org/licenses/MIT",
+            "codeRepository": "https://github.com/shaonkabir8/user-agents-generator",
+            "url": "https://ua-generator.js.org/",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            }
+        }
+    </script>
+    <script>
+        (function() {
+            try {
+                var t = localStorage.getItem('ua-theme');
+                var dark = t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #fafafa;
+            --bg-elev: #ffffff;
+            --fg: #0a0a0a;
+            --fg-muted: #525252;
+            --fg-subtle: #a3a3a3;
+            --border: #e5e5e5;
+            --border-strong: #d4d4d4;
+            --muted: #f3f3f5;
+            --code-bg: #f7f7f8;
+            --accent: #7c5cff;
+            --accent-soft: rgba(124, 92, 255, .1);
+            --accent-strong: #6847ff;
+            --accent-fg: #131313;
+            --accent-contrast: #ffffff;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --green: #16a34a;
+            --blue: #2563eb;
+            --pink: #ec4899;
+            --brand-a: #7c5cff;
+            --brand-b: #ec4899;
+            --font: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --header-h: 56px;
+            --rail-w: 264px;
+            --container: 1200px;
+            --transition: 160ms cubic-bezier(.2, .7, .2, 1);
+            --spring: 520ms cubic-bezier(.16, 1, .3, 1);
+            --scrollbar-thumb: color-mix(in oklab, var(--accent) 42%, var(--border));
+            --scrollbar-thumb-hover: var(--accent);
+        }
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #08080c;
+            --bg-elev: #0f0f15;
+            --fg: #f5f5f7;
+            --fg-muted: #a1a1aa;
+            --fg-subtle: #71717a;
+            --border: #1e1e26;
+            --border-strong: #2e2e38;
+            --muted: #15151c;
+            --code-bg: #0c0c12;
+            --accent: #8b74ff;
+            --accent-soft: rgba(139, 116, 255, .14);
+            --accent-strong: #a48fff;
+            --accent-fg: #fafafa;
+            --accent-contrast: #131313;
+            --success: #4ade80;
+            --danger: #f87171;
+            --green: #4ade80;
+            --blue: #60a5fa;
+            --brand-a: #8b74ff;
+            --brand-b: #f472b6;
+            --scrollbar-thumb: color-mix(in oklab, var(--accent) 55%, var(--border));
+            --scrollbar-thumb-hover: var(--accent-strong);
+        }
 
-<style>
-  /* ───────── tokens ───────── */
-  :root{
-    --bg:#08080c;
-    --panel:#0e0e14;
-    --panel-2:#12121a;
-    --panel-3:#181822;
-    --border:#1e1e2a;
-    --border-2:#2a2a3a;
-    --text:#e6e6ef;
-    --text-dim:#9a9aab;
-    --text-mute:#5c5c6e;
-    --accent:#7c5cff;
-    --accent-2:#a78bfa;
-    --accent-soft:rgba(124,92,255,.12);
-    --green:#34d399;
-    --red:#f87171;
-    --yellow:#fbbf24;
-    --blue:#60a5fa;
-    --mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
-    --sans:'Inter',system-ui,-apple-system,sans-serif;
-    --radius:10px;
-    --radius-sm:6px;
-    --shadow:0 8px 32px rgba(0,0,0,.45);
-    --rail-w:240px;
-  }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;scroll-padding-top:80px}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font:400 14px/1.55 var(--sans);
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
-  a{color:var(--accent-2);text-decoration:none}
-  a:hover{color:#c4b5fd}
-  code,kbd{font-family:var(--mono);font-size:.88em}
-  code{background:var(--accent-soft);color:#c4b5fd;padding:.12em .38em;border-radius:4px;border:1px solid rgba(124,92,255,.18)}
-  kbd{background:var(--panel-3);border:1px solid var(--border-2);border-bottom-width:2px;border-radius:4px;padding:.08em .4em;font-size:.78em;color:var(--text-dim)}
-  img{max-width:100%;height:auto;display:inline-block;vertical-align:middle}
-  h1,h2,h3,h4{font-weight:600;letter-spacing:-.02em;line-height:1.25}
-  h2{font-size:1.35rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
-  h3{font-size:.95rem;margin-bottom:.3rem}
-  ::selection{background:rgba(124,92,255,.35);color:#fff}
+        * {
+            box-sizing: border-box;
+        }
 
-  /* ───────── layout ───────── */
-  .app{display:flex;min-height:100vh}
+        /* ─── Custom scrollbar — design-system token driven ─── */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) transparent;
+        }
 
-  /* ───────── left rail ───────── */
-  .rail{
-    position:fixed;inset:0 auto 0 0;width:var(--rail-w);
-    background:var(--panel);border-right:1px solid var(--border);
-    display:flex;flex-direction:column;z-index:40;
-  }
-  .rail-head{
-    display:flex;align-items:center;gap:.6rem;
-    padding:1rem 1rem .75rem;border-bottom:1px solid var(--border);
-  }
-  .rail-mark{
-    width:26px;height:26px;border-radius:7px;
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));
-    display:grid;place-items:center;color:#fff;font-family:var(--mono);
-    font-size:.75rem;font-weight:700;flex-shrink:0;
-  }
-  .rail-title{font-size:.82rem;font-weight:600;line-height:1.2}
-  .rail-title span{display:block;font-size:.7rem;font-weight:400;color:var(--text-mute);font-family:var(--mono)}
-  .rail-nav{padding:.75rem .5rem;overflow-y:auto;flex:1}
-  .rail-group{margin-bottom:1rem}
-  .rail-group-label{
-    font-family:var(--mono);font-size:.65rem;font-weight:600;
-    letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);
-    padding:.25rem .65rem;margin-bottom:.15rem;
-  }
-  .rail-link{
-    display:flex;align-items:center;gap:.55rem;
-    padding:.4rem .65rem;border-radius:var(--radius-sm);
-    color:var(--text-dim);font-size:.82rem;font-weight:500;
-    transition:background .12s,color .12s;
-  }
-  .rail-link:hover{background:var(--panel-3);color:var(--text)}
-  .rail-link.active{background:var(--accent-soft);color:#c4b5fd}
-  .rail-link .ico{width:16px;text-align:center;font-size:.9rem;flex-shrink:0;opacity:.9}
-  .rail-link .badge{
-    margin-left:auto;font-family:var(--mono);font-size:.62rem;
-    background:var(--panel-3);border:1px solid var(--border);
-    border-radius:4px;padding:.05em .35em;color:var(--text-mute);
-  }
-  .rail-foot{
-    border-top:1px solid var(--border);padding:.6rem .75rem;
-    display:flex;align-items:center;justify-content:space-between;
-    font-size:.7rem;color:var(--text-mute);
-  }
-  .rail-foot a{color:var(--text-dim)}
-  .rail-foot a:hover{color:var(--accent-2)}
+        *::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
 
-  /* ───────── main ───────── */
-  .main{margin-left:var(--rail-w);flex:1;min-width:0;display:flex;flex-direction:column}
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-  /* top bar */
-  .topbar{
-    position:sticky;top:0;z-index:30;
-    display:flex;align-items:center;gap:.75rem;
-    padding:.55rem 1.5rem;
-    background:rgba(8,8,12,.82);
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-    border-bottom:1px solid var(--border);
-  }
-  .crumb{font-family:var(--mono);font-size:.72rem;color:var(--text-mute);white-space:nowrap}
-  .crumb b{color:var(--text-dim);font-weight:500}
-  .search{
-    flex:1;max-width:360px;display:flex;align-items:center;gap:.45rem;
-    background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius-sm);padding:.3rem .55rem;
-    color:var(--text-mute);font-size:.75rem;cursor:pointer;
-    transition:border-color .12s;
-  }
-  .search:hover{border-color:var(--border-2)}
-  .search .k{margin-left:auto;display:flex;gap:.2rem}
-  .topbar-actions{display:flex;align-items:center;gap:.4rem;margin-left:auto}
-  .icon-btn{
-    display:grid;place-items:center;width:30px;height:30px;
-    background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius-sm);color:var(--text-dim);
-    font-size:.85rem;cursor:pointer;transition:all .12s;
-  }
-  .icon-btn:hover{border-color:var(--border-2);color:var(--text)}
-  .menu-toggle{display:none}
+        *::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 999px;
+            border: 3px solid var(--bg);
+            background-clip: padding-box;
+            transition: background 200ms ease;
+        }
 
-  /* content wrapper */
-  .content{max-width:960px;width:100%;margin:0 auto;padding:2.5rem 2rem 6rem}
-  section{padding:2.5rem 0;border-bottom:1px solid var(--border);scroll-margin-top:70px}
-  section:last-of-type{border-bottom:none}
-  .sec-meta{
-    display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;
-    font-family:var(--mono);font-size:.68rem;color:var(--text-mute);
-    text-transform:uppercase;letter-spacing:.08em;
-  }
-  .sec-meta::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
-  .sec-lead{color:var(--text-dim);font-size:.88rem;margin-bottom:1.25rem;max-width:640px}
+        *::-webkit-scrollbar-thumb:hover {
+            background: var(--scrollbar-thumb-hover);
+            background-clip: padding-box;
+            border: 3px solid var(--bg);
+        }
 
-  /* ───────── terminal hero ───────── */
-  .hero{padding-top:1rem}
-  .hero-eyebrow{
-    display:inline-flex;align-items:center;gap:.45rem;
-    font-family:var(--mono);font-size:.7rem;color:var(--accent-2);
-    background:var(--accent-soft);border:1px solid rgba(124,92,255,.25);
-    border-radius:999px;padding:.25rem .7rem;margin-bottom:1rem;
-  }
-  .hero-eyebrow .live{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2.2s infinite}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-  .hero h1{font-size:clamp(1.7rem,3.6vw,2.6rem);margin-bottom:.85rem;font-weight:700}
-  .hero h1 .grad{background:linear-gradient(100deg,#c4b5fd,var(--accent-2) 40%,var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .hero .lead{color:var(--text-dim);font-size:.95rem;max-width:600px;margin-bottom:1.5rem}
+        *::-webkit-scrollbar-corner {
+            background: transparent;
+        }
 
-  /* terminal window */
-  .term{
-    background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
-    margin:1.25rem 0 1.5rem;
-  }
-  .term-bar{
-    display:flex;align-items:center;gap:.4rem;
-    padding:.5rem .75rem;background:var(--panel-2);
-    border-bottom:1px solid var(--border);
-  }
-  .term-dot{width:9px;height:9px;border-radius:50%}
-  .term-dot.r{background:#ff5f57}.term-dot.y{background:#febc2e}.term-dot.g{background:#28c840}
-  .term-tab{
-    margin-left:.6rem;font-family:var(--mono);font-size:.68rem;
-    color:var(--text-mute);display:flex;gap:.75rem;
-  }
-  .term-tab span{padding:.15rem .4rem;border-radius:4px}
-  .term-tab .on{background:var(--panel-3);color:var(--text-dim)}
-  .term-body{padding:1rem 1.1rem;font-family:var(--mono);font-size:.8rem;line-height:1.75;overflow-x:auto}
-  .term-body .ln{display:block;white-space:pre}
-  .term-body .prompt{color:var(--green);user-select:none;margin-right:.5rem}
-  .term-body .cmd{color:var(--text)}
-  .term-body .out{color:var(--text-mute)}
-  .term-body .hi{color:var(--accent-2)}
-  .term-body .ok{color:var(--green)}
-  .cursor{display:inline-block;width:7px;height:14px;background:var(--accent-2);vertical-align:middle;animation:blink 1s steps(1) infinite}
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: calc(var(--header-h) + 24px);
+        }
 
-  /* quick actions */
-  .quick{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
-  .btn{
-    display:inline-flex;align-items:center;gap:.4rem;
-    font-family:var(--mono);font-size:.75rem;font-weight:500;
-    padding:.5rem .9rem;border-radius:var(--radius-sm);
-    border:1px solid var(--border-2);background:var(--panel);
-    color:var(--text-dim);cursor:pointer;transition:all .12s;
-  }
-  .btn:hover{border-color:var(--accent);color:var(--text)}
-  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);color:#08080c}
+        body {
+            margin: 0;
+            min-height: 100dvh;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
 
-  /* ───────── install ───────── */
-  .install-tabs{display:flex;gap:.25rem;margin-bottom:.6rem;flex-wrap:wrap}
-  .install-tabs button{
-    font-family:var(--mono);font-size:.7rem;padding:.3rem .7rem;
-    background:transparent;border:1px solid transparent;border-radius:4px;
-    color:var(--text-mute);cursor:pointer;
-  }
-  .install-tabs button:hover{color:var(--text-dim)}
-  .install-tabs button.on{background:var(--panel-3);border-color:var(--border);color:var(--accent-2)}
-  .copyline{
-    position:relative;background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius-sm);padding:.7rem .9rem;padding-right:4rem;
-    font-family:var(--mono);font-size:.8rem;color:var(--text);
-    display:flex;align-items:center;gap:.5rem;
-  }
-  .copyline .p{color:var(--green);user-select:none}
-  .copy-btn{
-    position:absolute;top:50%;right:.5rem;transform:translateY(-50%);
-    background:var(--panel-3);border:1px solid var(--border);border-radius:4px;
-    color:var(--text-dim);font-family:var(--mono);font-size:.65rem;
-    padding:.25rem .5rem;cursor:pointer;
-  }
-  .copy-btn:hover{color:var(--accent-2);border-color:var(--accent)}
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
-  /* ───────── feature grid (dense) ───────── */
-  .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem}
-  @media(max-width:700px){.fgrid{grid-template-columns:1fr}}
-  .fcard{
-    background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius-sm);padding:.9rem 1rem;
-    transition:border-color .12s,background .12s;
-  }
-  .fcard:hover{border-color:var(--border-2);background:var(--panel-2)}
-  .fcard-head{display:flex;align-items:center;gap:.45rem;margin-bottom:.35rem}
-  .fcard-head .ico{font-size:.95rem}
-  .fcard-head h3{font-size:.82rem;margin:0}
-  .fcard p{font-size:.78rem;color:var(--text-dim);line-height:1.5}
-  .fcard code{font-size:.8em}
+        button {
+            font: inherit;
+            color: inherit;
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
 
-  /* ───────── api tables (dense) ───────── */
-  .api-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:1.25rem}
-  .api-table th{
-    text-align:left;font-family:var(--mono);font-size:.66rem;font-weight:600;
-    letter-spacing:.06em;text-transform:uppercase;color:var(--text-mute);
-    padding:.45rem .65rem;border-bottom:1px solid var(--border-2);
-  }
-  .api-table td{padding:.5rem .65rem;border-bottom:1px solid var(--border);color:var(--text-dim);vertical-align:top}
-  .api-table tr:last-child td{border-bottom:none}
-  .api-table tr:hover td{background:var(--panel-2)}
-  .api-table td:first-child{font-family:var(--mono);font-size:.78rem;color:var(--text);white-space:nowrap}
+        code,
+        pre,
+        kbd {
+            font-family: var(--mono);
+            font-size: .875em;
+        }
 
-  /* ───────── callout ───────── */
-  .callout{
-    display:flex;gap:.6rem;padding:.7rem .9rem;margin:1rem 0;
-    background:var(--panel);border:1px solid var(--border);
-    border-left:2px solid var(--accent);border-radius:var(--radius-sm);
-    font-size:.8rem;color:var(--text-dim);
-  }
-  .callout .ic{flex-shrink:0;font-size:.9rem}
-  .callout strong{color:var(--text)}
-  .callout code{font-size:.82em}
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
 
-  /* ───────── migrate ───────── */
-  .migrate{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
-  @media(max-width:640px){.migrate{grid-template-columns:1fr}}
-  .migrate-col{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem}
-  .migrate-col.bad{border-left:2px solid var(--red)}
-  .migrate-col.good{border-left:2px solid var(--green)}
-  .migrate-col h3{display:flex;align-items:center;gap:.35rem;font-size:.8rem;margin-bottom:.6rem}
-  .migrate-col ul{list-style:none;padding:0}
-  .migrate-col li{font-size:.78rem;color:var(--text-dim);padding:.25rem 0;display:flex;gap:.4rem}
-  .migrate-col.bad li::before{content:"✗";color:var(--red);font-family:var(--mono);flex-shrink:0}
-  .migrate-col.good li::before{content:"✓";color:var(--green);font-family:var(--mono);flex-shrink:0}
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
 
-  /* ───────── contrib ───────── */
-  .contrib{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
-  @media(max-width:720px){.contrib{grid-template-columns:repeat(2,1fr)}}
-  .contrib a{
-    display:flex;flex-direction:column;align-items:center;gap:.3rem;
-    padding:.75rem .5rem;background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius-sm);font-size:.75rem;font-weight:500;
-    color:var(--text-dim);text-align:center;transition:all .12s;
-  }
-  .contrib a:hover{border-color:var(--accent);color:var(--text);background:var(--panel-2)}
-  .contrib a .ico{font-size:1rem}
+        .skip {
+            position: fixed;
+            top: 8px;
+            left: 8px;
+            z-index: 1000;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: var(--fg);
+            color: var(--bg);
+            font-size: 13px;
+            font-weight: 600;
+            transform: translateY(-200%);
+            transition: transform var(--transition);
+        }
 
-  /* ───────── footer ───────── */
-  footer{padding:1.5rem 0 0;border-top:1px solid var(--border);margin-top:1rem}
-  .foot-row{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;font-size:.72rem;color:var(--text-mute)}
-  .foot-links{display:flex;flex-wrap:wrap;gap:1rem}
-  .foot-links a{color:var(--text-dim)}
-  .foot-links a:hover{color:var(--accent-2)}
+        .skip:focus {
+            transform: translateY(0);
+        }
 
-  /* ───────── command palette ───────── */
-  .palette-overlay{
-    position:fixed;inset:0;background:rgba(4,4,8,.72);
-    backdrop-filter:blur(6px);z-index:100;display:none;
-    align-items:flex-start;justify-content:center;padding-top:12vh;
-  }
-  .palette-overlay.on{display:flex}
-  .palette{
-    width:min(560px,92vw);background:var(--panel);
-    border:1px solid var(--border-2);border-radius:var(--radius);
-    box-shadow:0 24px 80px rgba(0,0,0,.7);overflow:hidden;
-  }
-  .palette-input{
-    width:100%;background:transparent;border:none;outline:none;
-    padding:.9rem 1rem;font-family:var(--mono);font-size:.85rem;color:var(--text);
-    border-bottom:1px solid var(--border);
-  }
-  .palette-input::placeholder{color:var(--text-mute)}
-  .palette-list{max-height:320px;overflow-y:auto;padding:.35rem}
-  .palette-item{
-    display:flex;align-items:center;gap:.55rem;
-    padding:.45rem .65rem;border-radius:var(--radius-sm);
-    font-size:.8rem;color:var(--text-dim);cursor:pointer;
-  }
-  .palette-item:hover,.palette-item.sel{background:var(--accent-soft);color:var(--text)}
-  .palette-item .k{margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--text-mute)}
+        .container {
+            width: 100%;
+            max-width: var(--container);
+            margin-inline: auto;
+            padding-inline: 24px;
+        }
 
-  /* ───────── responsive ───────── */
-  @media(max-width:900px){
-    :root{--rail-w:0px}
-    .rail{transform:translateX(-100%);transition:transform .2s;width:240px}
-    .rail.open{transform:translateX(0)}
-    .main{margin-left:0}
-    .menu-toggle{display:grid}
-    .content{padding:1.75rem 1.1rem 4rem}
-  }
-  @media(prefers-reduced-motion:reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-  }
-  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-</style>
+        /* Header */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            height: var(--header-h);
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-shell {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--fg);
+            color: var(--bg);
+            font-family: var(--mono);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .desktop-nav {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .desktop-nav a {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--fg);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .desktop-nav a:hover {
+            background: var(--muted);
+        }
+
+        .nav-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .star-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--fg);
+            transition: background var(--transition);
+        }
+
+        .star-badge:hover {
+            background: var(--muted);
+        }
+
+        .star-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .npm-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--fg);
+            transition: background var(--transition);
+        }
+
+        .npm-link:hover {
+            background: var(--muted);
+        }
+
+        .npm-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            transition: background var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--muted);
+        }
+
+        .theme-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: var(--fg);
+        }
+
+        html[data-theme="light"] .theme-toggle .sun-icon {
+            display: none;
+        }
+
+        html[data-theme="dark"] .theme-toggle .moon-icon {
+            display: none;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--muted);
+        }
+
+        .mobile-menu-toggle svg {
+            width: 18px;
+            height: 18px;
+            color: var(--fg);
+        }
+
+        /* ══════════ HERO ══════════ */
+        .hero {
+            max-width: var(--container);
+            margin-inline: auto;
+            padding: 96px 24px 80px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg-elev);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--fg-muted);
+        }
+
+        .eyebrow .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+        }
+
+        .hero-title {
+            margin: 0;
+            max-width: 20ch;
+            font-size: clamp(40px, 6vw, 64px);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.035em;
+            text-wrap: balance;
+            background: linear-gradient(180deg, var(--fg) 60%, color-mix(in oklab, var(--fg) 70%, transparent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-lede {
+            margin: 0;
+            max-width: 56ch;
+            font-size: clamp(16px, 1.3vw, 19px);
+            line-height: 1.65;
+            color: var(--fg-muted);
+            text-wrap: pretty;
+        }
+
+        .hero-lede strong {
+            color: var(--fg);
+            font-weight: 600;
+        }
+
+        .hero-lede code {
+            font-family: var(--mono);
+            font-size: .85em;
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            color: var(--fg);
+        }
+
+        /* Terminal */
+        .terminal {
+            width: 100%;
+            max-width: 34rem;
+            margin-top: 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-elev);
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 16px 40px -20px rgba(124, 92, 255, .28);
+            text-align: left;
+        }
+
+        html[data-theme="dark"] .terminal {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 24px 60px -20px rgba(139, 116, 255, .4);
+        }
+
+        .terminal-chrome {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--muted);
+        }
+
+        .terminal-dots {
+            display: inline-flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .terminal-dots span {
+            width: 11px;
+            height: 11px;
+            border-radius: 999px;
+            background: #ff5f57;
+        }
+
+        .terminal-dots span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .terminal-dots span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .pkg-tabs {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+            min-width: 0;
+            scrollbar-width: none;
+        }
+
+        .pkg-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pkg-tab {
+            height: 26px;
+            padding: 0 9px;
+            border-radius: 6px;
+            font-family: var(--font);
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: var(--fg-muted);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .pkg-tab:hover {
+            background: color-mix(in oklab, var(--border) 60%, transparent);
+            color: var(--fg);
+        }
+
+        .pkg-tab[aria-selected="true"] {
+            background: var(--bg-elev);
+            color: var(--accent);
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+        }
+
+        .terminal-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .terminal-actions .icon-btn {
+            width: 28px;
+            height: 28px;
+        }
+
+        .terminal-actions .icon-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .terminal-actions .check-icon {
+            display: none;
+            color: var(--success);
+        }
+
+        .terminal-actions.copied .copy-icon {
+            display: none;
+        }
+
+        .terminal-actions.copied .check-icon {
+            display: block;
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            color: var(--fg-muted);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .icon-btn:hover {
+            background: var(--muted);
+            color: var(--fg);
+        }
+
+        .icon-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .terminal-body {
+            padding: 14px 16px;
+            font-family: var(--mono);
+            font-size: 14px;
+            line-height: 1.55;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 10px;
+            min-height: 52px;
+            color: var(--fg);
+        }
+
+        .prompt {
+            display: inline-flex;
+            gap: 8px;
+            flex-shrink: 0;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .prompt .arrow {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .prompt .path {
+            color: var(--blue);
+        }
+
+        .typed {
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--fg);
+        }
+
+        .caret {
+            display: inline-block;
+            width: 9px;
+            height: 1.05em;
+            background: currentColor;
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: blink 1.06s step-end infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            45% {
+                opacity: 1;
+            }
+
+            45.01%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            height: 36px;
+            padding: 0 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            transition: background var(--transition), opacity var(--transition), border-color var(--transition);
+        }
+
+        .button-primary {
+            background: var(--accent-fg);
+            color: var(--accent-contrast);
+        }
+
+        .button-primary:hover {
+            opacity: .88;
+        }
+
+        .button-secondary {
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--fg);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+        }
+
+        .button-secondary:hover {
+            background: var(--muted);
+        }
+
+        .agent-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 28px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--fg-muted);
+            transition: color var(--transition), background var(--transition);
+        }
+
+        .agent-copy:hover {
+            color: var(--fg);
+            background: var(--muted);
+        }
+
+        .agent-copy svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .agent-copy.copied {
+            color: var(--success);
+        }
+
+        /* Layout */
+        .layout {
+            max-width: var(--container);
+            margin-inline: auto;
+            padding-inline: 24px;
+            display: grid;
+            grid-template-columns: var(--rail-w) minmax(0, 1fr);
+            gap: 48px;
+            border-top: 1px solid var(--border);
+            padding-top: 48px;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        .rail {
+            position: sticky;
+            top: calc(var(--header-h) + 24px);
+            height: calc(100vh - var(--header-h) - 24px);
+            overflow-y: auto;
+            padding-right: 8px;
+            font-size: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) transparent;
+        }
+
+        .rail-group {
+            margin-bottom: 24px;
+        }
+
+        .rail-group h4 {
+            margin: 0 0 8px;
+            padding-inline: 12px;
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--fg-subtle);
+        }
+
+        .rail-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .rail-list a {
+            display: block;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--fg-muted);
+            font-size: 14px;
+            border-left: 2px solid transparent;
+            transition: color var(--transition), background var(--transition), border-color var(--transition);
+        }
+
+        .rail-list a:hover {
+            color: var(--fg);
+            background: var(--muted);
+        }
+
+        .rail-list a.active {
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-left-color: var(--accent);
+            font-weight: 500;
+        }
+
+        .rail-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .5);
+            z-index: 55;
+            opacity: 0;
+            transition: opacity 180ms ease;
+        }
+
+        .rail-backdrop.open {
+            opacity: 1;
+        }
+
+        .content {
+            min-width: 0;
+            padding-top: 0;
+        }
+
+        .section {
+            scroll-margin-top: calc(var(--header-h) + 24px);
+            margin-bottom: 64px;
+        }
+
+        .section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        /* Section header style */
+        .sec-meta {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: .75rem;
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: var(--fg-subtle);
+            text-transform: uppercase;
+            letter-spacing: .08em
+        }
+
+        .sec-meta::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent)
+        }
+
+        .sec-lead {
+            color: var(--fg-muted);
+            font-size: .88rem;
+            margin-bottom: 1.25rem;
+            max-width: 640px
+        }
+
+        .section h2 {
+            margin: 0 0 1rem;
+            font-size: 1.35rem;
+            line-height: 1.25;
+            letter-spacing: -.02em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .section h3 {
+            margin: 32px 0 10px;
+            font-size: 18px;
+            line-height: 1.3;
+            font-weight: 600;
+        }
+
+        .section p {
+            margin: 0 0 16px;
+            color: var(--fg-muted);
+        }
+
+        .section p strong {
+            color: var(--fg);
+            font-weight: 600;
+        }
+
+        .section code {
+            padding: 1px 6px;
+            border-radius: 4px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            font-size: .85em;
+            color: var(--fg);
+        }
+
+        .section ul,
+        .section ol {
+            margin: 0 0 20px;
+            padding-left: 22px;
+            color: var(--fg-muted);
+        }
+
+        .section li {
+            margin: 6px 0;
+        }
+
+        .section li::marker {
+            color: var(--fg-subtle);
+        }
+
+        /* Feature grid */
+        .fgrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .6rem
+        }
+
+        @media(max-width:700px) {
+            .fgrid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .fcard {
+            background: var(--bg-elev);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: .9rem 1rem;
+            transition: border-color .12s, background .12s
+        }
+
+        .fcard:hover {
+            border-color: var(--border-strong);
+            background: var(--muted)
+        }
+
+        .fcard-head {
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            margin-bottom: .35rem
+        }
+
+        .fcard-head .ico {
+            font-size: .95rem
+        }
+
+        .fcard-head h3 {
+            font-size: .82rem;
+            margin: 0
+        }
+
+        .fcard p {
+            font-size: .78rem;
+            color: var(--fg-muted);
+            line-height: 1.5
+        }
+
+        .fcard code {
+            font-size: .8em
+        }
+
+        /* API tables */
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+            margin-bottom: 1.25rem
+        }
+
+        .api-table th {
+            text-align: left;
+            font-weight: 600;
+            color: var(--fg);
+            padding: .45rem .65rem;
+            border-bottom: 1px solid var(--border-strong);
+        }
+
+        .api-table td {
+            padding: .5rem .65rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg-muted);
+            vertical-align: top
+        }
+
+        .api-table tr:last-child td {
+            border-bottom: none
+        }
+
+        .api-table tr:hover td {
+            background: var(--muted)
+        }
+
+        .api-table td:first-child {
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--fg);
+            white-space: nowrap
+        }
+
+        /* Callout */
+        .callout {
+            display: flex;
+            gap: .6rem;
+            padding: .7rem .9rem;
+            margin: 1rem 0;
+            background: var(--bg-elev);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--accent);
+            border-radius: var(--radius-sm);
+            font-size: .8rem;
+            color: var(--fg-muted);
+        }
+
+        .callout .ic {
+            flex-shrink: 0;
+            font-size: .9rem
+        }
+
+        .callout strong {
+            color: var(--fg)
+        }
+
+        .callout code {
+            font-size: .82em
+        }
+
+        /* Contribution grid */
+        .contrib {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .5rem
+        }
+
+        @media(max-width:720px) {
+            .contrib {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .contrib a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .3rem;
+            padding: .75rem .5rem;
+            background: var(--bg-elev);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: .75rem;
+            font-weight: 500;
+            color: var(--fg-muted);
+            text-align: center;
+            transition: all .12s;
+        }
+
+        .contrib a:hover {
+            border-color: var(--accent);
+            color: var(--fg);
+            background: var(--muted)
+        }
+
+        .contrib a .ico {
+            font-size: 1rem
+        }
+
+        /* Usage accordion */
+        .usage-intro {
+            max-width: 60ch;
+        }
+
+        .usage-accordion {
+            margin: 24px 0 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-elev);
+            overflow: hidden;
+        }
+
+        .usage-item+.usage-item {
+            border-top: 1px solid var(--border);
+        }
+
+        .usage-trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 22px;
+            text-align: left;
+            color: var(--fg);
+            font-family: var(--font);
+            transition: background var(--transition);
+        }
+
+        .usage-trigger:hover {
+            background: var(--muted);
+        }
+
+        .usage-trigger[aria-expanded="true"] {
+            background: var(--muted);
+        }
+
+        .usage-trigger:focus-visible {
+            outline-offset: -2px;
+            border-radius: 0;
+        }
+
+        .usage-num {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--fg-subtle);
+            min-width: 22px;
+        }
+
+        .usage-title {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.005em;
+            color: var(--fg);
+        }
+
+        .usage-desc {
+            font-size: 13px;
+            color: var(--fg-muted);
+            margin-left: 6px;
+        }
+
+        .usage-chevron {
+            margin-left: auto;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            color: var(--fg-muted);
+            transition: transform 240ms cubic-bezier(.2, .7, .2, 1), color var(--transition);
+        }
+
+        .usage-trigger[aria-expanded="true"] .usage-chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        .usage-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 320ms cubic-bezier(.2, .7, .2, 1);
+        }
+
+        .usage-panel.open {
+            grid-template-rows: 1fr;
+        }
+
+        .usage-panel-inner {
+            overflow: hidden;
+        }
+
+        .usage-panel-content {
+            padding: 0 22px 22px;
+        }
+
+        .usage-panel-content .canvas {
+            margin: 0;
+        }
+
+        .usage-panel-content .canvas-window {
+            margin: 0;
+        }
+
+        /* Tables */
+        .table-wrap {
+            margin: 16px 0 24px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-elev);
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table-wrap thead {
+            background: var(--muted);
+        }
+
+        .table-wrap th {
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--fg);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .table-wrap td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            color: var(--fg-muted);
+            vertical-align: top;
+        }
+
+        .table-wrap tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .table-wrap tbody tr:hover td {
+            background: color-mix(in oklab, var(--muted) 60%, transparent);
+        }
+
+        .table-wrap td code {
+            font-size: 12.5px;
+        }
+
+        .sig {
+            color: var(--accent);
+            font-weight: 500;
+            white-space: nowrap;
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        .yes {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .no {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Editor canvas */
+        .canvas {
+            position: relative;
+            margin: 20px 0 28px;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: radial-gradient(120% 90% at 0% 0%, rgba(124, 92, 255, .14), transparent 55%), radial-gradient(120% 90% at 100% 100%, rgba(236, 72, 153, .12), transparent 55%), linear-gradient(135deg, #f8f6ff 0%, #fdf7fc 50%, #f2f7ff 100%);
+        }
+
+        html[data-theme="dark"] .canvas {
+            border-color: rgba(255, 255, 255, .08);
+            background: radial-gradient(120% 90% at 0% 0%, rgba(139, 116, 255, .22), transparent 55%), radial-gradient(120% 90% at 100% 100%, rgba(244, 114, 182, .16), transparent 55%), linear-gradient(135deg, #14121d 0%, #1c1220 50%, #101620 100%);
+        }
+
+        .canvas-window {
+            border-radius: 10px;
+            background: #0d0d12;
+            border: 1px solid rgba(255, 255, 255, .07);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .3), 0 24px 48px -20px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .02) inset;
+            overflow: hidden;
+        }
+
+        .canvas-chrome {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .canvas-dots {
+            display: inline-flex;
+            gap: 7px;
+            flex-shrink: 0;
+        }
+
+        .canvas-dots span {
+            width: 11px;
+            height: 11px;
+            border-radius: 999px;
+            background: #ff5f57;
+        }
+
+        .canvas-dots span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .canvas-dots span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .canvas-filename {
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 500;
+            color: #71717a;
+            letter-spacing: .02em;
+        }
+
+        .canvas-copy {
+            margin-left: auto;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            color: #71717a;
+            transition: background 160ms ease, color 160ms ease;
+        }
+
+        .canvas-copy:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #e4e4e7;
+        }
+
+        .canvas-copy svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .canvas-copy .check-icon {
+            display: none;
+            color: #4ade80;
+        }
+
+        .canvas-copy.copied .copy-icon {
+            display: none;
+        }
+
+        .canvas-copy.copied .check-icon {
+            display: block;
+        }
+
+        .canvas-code {
+            margin: 0;
+            padding: 20px 24px;
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.75;
+            color: #e4e4e7;
+            background: transparent;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, .15) transparent;
+        }
+
+        .canvas-code::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .canvas-code::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, .15);
+            border-radius: 3px;
+        }
+
+        /* Material syntax tokens */
+        .tok-kw {
+            color: #c792ea;
+        }
+
+        .tok-str {
+            color: #c3e88d;
+        }
+
+        .tok-fn {
+            color: #82aaff;
+        }
+
+        .tok-num {
+            color: #f78c6c;
+        }
+
+        .tok-op {
+            color: #89ddff;
+        }
+
+        .tok-com {
+            color: #546e7a;
+            font-style: italic;
+        }
+
+        /* ══════════ APPLE-STYLE EXPANDABLE CARDS ══════════ */
+        .apple-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 20px 0 24px;
+        }
+
+        .apple-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--bg-elev);
+            overflow: hidden;
+            transition:
+                border-color 320ms cubic-bezier(.16, 1, .3, 1),
+                box-shadow 320ms cubic-bezier(.16, 1, .3, 1);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .apple-card:hover {
+            border-color: var(--border-strong);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 12px 28px -16px rgba(0, 0, 0, .1);
+        }
+
+        .apple-card.is-open {
+            border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
+            box-shadow: 0 0 0 3px var(--accent-soft), 0 16px 40px -20px rgba(124, 92, 255, .35);
+        }
+
+        html[data-theme="dark"] .apple-card.is-open {
+            box-shadow: 0 0 0 3px var(--accent-soft), 0 16px 40px -20px rgba(139, 116, 255, .4);
+        }
+
+        .apple-card-trigger {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 18px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .apple-card-trigger:active {
+            transform: scale(.98);
+        }
+
+        .apple-card-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+            background: color-mix(in oklab, var(--success) 14%, transparent);
+            color: var(--success);
+            transition: transform 520ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .apple-card.no .apple-card-icon {
+            background: color-mix(in oklab, var(--danger) 12%, transparent);
+            color: var(--danger);
+        }
+
+        .apple-card.is-open .apple-card-icon {
+            transform: scale(1.1);
+        }
+
+        .apple-card-name {
+            font-family: var(--mono);
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--fg);
+            padding: 0;
+            background: none;
+            border: 0;
+        }
+
+        .apple-card-status {
+            margin-left: auto;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: color-mix(in oklab, var(--success) 12%, transparent);
+            color: var(--success);
+            flex-shrink: 0;
+        }
+
+        .apple-card.no .apple-card-status {
+            background: color-mix(in oklab, var(--danger) 10%, transparent);
+            color: var(--danger);
+        }
+
+        .apple-chevron {
+            width: 15px;
+            height: 15px;
+            color: var(--fg-subtle);
+            transition: transform 520ms cubic-bezier(.16, 1, .3, 1), color 320ms ease;
+            flex-shrink: 0;
+        }
+
+        .apple-card.is-open .apple-chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        .apple-card-body {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 480ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .apple-card.is-open .apple-card-body {
+            grid-template-rows: 1fr;
+        }
+
+        .apple-card-body-inner {
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .apple-card-content {
+            margin: 0 18px;
+            padding: 14px 0 18px;
+            border-top: 1px solid var(--border);
+        }
+
+        .apple-card-delivery {
+            margin: 0 0 10px;
+            font-size: .8rem;
+            color: var(--fg-muted);
+        }
+
+        .apple-card-value {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: .74rem;
+            line-height: 1.6;
+            color: var(--fg);
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* ══════════ NEWSLETTER — premium ══════════ */
+        .newsletter-section {
+            position: relative;
+        }
+
+        .newsletter {
+            position: relative;
+            overflow: hidden;
+            margin: 8px 0 0;
+            padding: 40px;
+            border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--border));
+            border-radius: 24px;
+            background:
+                radial-gradient(90% 120% at 0% 0%, var(--accent-soft), transparent 60%),
+                radial-gradient(80% 120% at 100% 100%, rgba(236, 72, 153, .10), transparent 60%),
+                var(--bg-elev);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, .04),
+                0 24px 64px -24px rgba(124, 92, 255, .22);
+            transition: border-color var(--spring), box-shadow var(--spring), transform var(--spring);
+        }
+
+        .newsletter::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 65%, transparent), transparent);
+            pointer-events: none;
+        }
+
+        .newsletter:focus-within {
+            border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+            box-shadow:
+                0 0 0 4px var(--accent-soft),
+                0 24px 64px -24px rgba(124, 92, 255, .45);
+        }
+
+        .nl-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .nl-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border-radius: 13px;
+            background: linear-gradient(135deg, var(--brand-a), var(--brand-b));
+            color: #fff;
+            box-shadow: 0 8px 24px -10px rgba(124, 92, 255, .9);
+        }
+
+        .nl-badge svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nl-head h3 {
+            margin: 0 0 6px;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -.02em;
+        }
+
+        .nl-head p {
+            margin: 0;
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: var(--fg-muted);
+            max-width: 56ch;
+        }
+
+        .nl-form {
+            display: flex;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .nl-field {
+            position: relative;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .nl-input {
+            width: 100%;
+            height: 52px;
+            padding: 20px 16px 8px;
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 15px;
+            line-height: 1;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+        }
+
+        .nl-input::placeholder {
+            color: transparent;
+        }
+
+        .nl-label {
+            position: absolute;
+            left: 17px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--fg-subtle);
+            pointer-events: none;
+            transform-origin: left center;
+            transition: top var(--spring), transform var(--spring), font-size var(--spring), color var(--transition), letter-spacing var(--spring);
+        }
+
+        .nl-input:focus+.nl-label,
+        .nl-input:not(:placeholder-shown)+.nl-label {
+            top: 11px;
+            transform: none;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .nl-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-elev);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        .nl-input:user-invalid {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--danger) 14%, transparent);
+        }
+
+        .nl-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 52px;
+            padding: 0 24px;
+            border-radius: 12px;
+            background: var(--accent-fg);
+            color: var(--accent-contrast);
+            font-size: 14.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: transform var(--spring), opacity var(--transition), background var(--transition), box-shadow var(--spring);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+        }
+
+        .nl-submit:hover {
+            opacity: .92;
+            box-shadow: 0 8px 24px -12px rgba(0, 0, 0, .35);
+        }
+
+        .nl-submit:active {
+            transform: scale(.96);
+        }
+
+        .nl-submit:disabled {
+            opacity: .6;
+            cursor: progress;
+            transform: none;
+        }
+
+        .nl-submit svg {
+            width: 16px;
+            height: 16px;
+            transition: transform var(--spring);
+        }
+
+        .nl-submit:hover svg {
+            transform: translateX(3px);
+        }
+
+        .nl-check {
+            display: none;
+        }
+
+        .nl-form[data-state="done"] .nl-submit {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .nl-form[data-state="done"] .nl-arrow {
+            display: none;
+        }
+
+        .nl-form[data-state="done"] .nl-check {
+            display: inline-block;
+        }
+
+        .nl-status {
+            margin: 12px 0 0;
+            min-height: 1.1em;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: var(--fg-subtle);
+            transition: color var(--transition);
+        }
+
+        .nl-status[data-state="ok"] {
+            color: var(--success);
+        }
+
+        .nl-status[data-state="err"] {
+            color: var(--danger);
+        }
+
+        .nl-status[data-state="pending"] {
+            color: var(--accent);
+        }
+
+        .nl-trust {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 20px;
+            margin: 16px 0 0;
+            padding: 0;
+            list-style: none;
+            font-size: 12px;
+            color: var(--fg-subtle);
+        }
+
+        .nl-trust li {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nl-trust svg {
+            width: 13px;
+            height: 13px;
+            color: var(--success);
+            flex-shrink: 0;
+        }
+
+        /* ══════════ SCROLL CTA ══════════ */
+        .scroll-cta {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 45;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 5px;
+            border-radius: 999px;
+            background: color-mix(in oklab, var(--bg-elev) 80%, transparent);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, .04),
+                0 16px 40px -16px rgba(0, 0, 0, .18);
+            opacity: 0;
+            transform: translateY(20px) scale(.85);
+            pointer-events: none;
+            transition:
+                opacity 280ms cubic-bezier(.16, 1, .3, 1),
+                transform 520ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .scroll-cta.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .scroll-cta button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            color: var(--fg-muted);
+            transition:
+                background 180ms ease,
+                color 180ms ease,
+                transform 320ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .scroll-cta button:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .scroll-cta button:active {
+            transform: scale(.86);
+        }
+
+        .scroll-cta button svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 320ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .scroll-cta .scroll-up:hover svg {
+            transform: translateY(-2px);
+        }
+
+        .scroll-cta .scroll-down:hover svg {
+            transform: translateY(2px);
+        }
+
+        .scroll-cta-divider {
+            height: 1px;
+            margin: 0 8px;
+            background: var(--border);
+        }
+
+        @media (max-width: 767px) {
+            .scroll-cta {
+                bottom: 20px;
+                right: 16px;
+            }
+
+            .scroll-cta button {
+                width: 34px;
+                height: 34px;
+            }
+        }
+
+        /* ══════════ ENHANCED FOOTER ══════════ */
+        .site-footer {
+            position: relative;
+            margin-top: 0;
+            padding: 80px 24px 36px;
+            border-top: 1px solid var(--border);
+            background:
+                radial-gradient(60% 80% at 50% 0%, var(--accent-soft), transparent 70%),
+                var(--bg);
+        }
+
+        .site-footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 45%, transparent), transparent);
+            pointer-events: none;
+        }
+
+        .footer-main {
+            max-width: var(--container);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.7fr 1fr 1fr 1fr;
+            gap: 48px;
+            padding-bottom: 48px;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .footer-brand .brand {
+            font-size: 15px;
+        }
+
+        .footer-tagline {
+            margin: 0;
+            max-width: 38ch;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--fg-muted);
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .footer-socials a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-elev);
+            color: var(--fg-muted);
+            transition:
+                color 200ms ease,
+                background 200ms ease,
+                border-color 200ms ease,
+                transform 320ms cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .footer-socials a:hover {
+            color: var(--accent);
+            border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+            background: var(--accent-soft);
+            transform: translateY(-2px);
+        }
+
+        .footer-socials a svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .footer-col h4 {
+            margin: 0 0 16px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--fg-subtle);
+        }
+
+        .footer-col ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col a {
+            font-size: 14px;
+            color: var(--fg-muted);
+            transition: color 160ms ease;
+        }
+
+        .footer-col a:hover {
+            color: var(--fg);
+        }
+
+        .footer-bottom {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: var(--fg-subtle);
+        }
+
+        .footer-bottom p {
+            margin: 0;
+        }
+
+        .footer-bottom a {
+            color: var(--fg-muted);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 1px;
+            transition: color 160ms ease;
+        }
+
+        .footer-bottom a:hover {
+            color: var(--fg);
+            text-decoration-thickness: 2px;
+        }
+
+        .footer-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            font-weight: 500;
+        }
+
+        .footer-status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 22%, transparent);
+            animation: pulse 2.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px color-mix(in oklab, var(--success) 22%, transparent);
+            }
+
+            50% {
+                box-shadow: 0 0 0 7px color-mix(in oklab, var(--success) 0%, transparent);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .footer-main {
+                grid-template-columns: 1fr 1fr;
+                gap: 40px;
+            }
+
+            .footer-brand {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .site-footer {
+                padding: 64px 20px 28px;
+            }
+
+            .footer-main {
+                grid-template-columns: 1fr;
+                gap: 36px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+        }
+
+        /* Command palette */
+        .palette-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0, 0, 0, .55);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 14vh;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 160ms ease;
+        }
+
+        .palette-backdrop[hidden] {
+            display: none;
+        }
+
+        .palette-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .palette {
+            width: min(560px, 92vw);
+            max-height: 70vh;
+            background: var(--bg-elev);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 60px -20px rgba(0, 0, 0, .55);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(-8px);
+            transition: transform 160ms ease;
+        }
+
+        .palette-backdrop.open .palette {
+            transform: translateY(0);
+        }
+
+        .palette-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .palette-input-wrap svg {
+            width: 16px;
+            height: 16px;
+            color: var(--fg-subtle);
+            flex-shrink: 0;
+        }
+
+        .palette-input {
+            flex: 1;
+            height: 24px;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--fg);
+            font: inherit;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .palette-input::placeholder {
+            color: var(--fg-subtle);
+        }
+
+        .palette-results {
+            list-style: none;
+            margin: 0;
+            padding: 8px;
+            overflow-y: auto;
+            max-height: calc(70vh - 60px);
+        }
+
+        .palette-results li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--fg-muted);
+        }
+
+        .palette-results li[aria-selected="true"] {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .palette-results mark {
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 0 1px;
+            border-radius: 2px;
+        }
+
+        .palette-empty {
+            padding: 24px 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--fg-subtle);
+        }
+
+        .palette-foot {
+            display: flex;
+            gap: 16px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--fg-subtle);
+        }
+
+        .palette-foot kbd {
+            font-family: var(--mono);
+            font-size: 10px;
+            padding: 1px 5px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--fg-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 0;
+            }
+
+            .rail {
+                position: fixed;
+                top: var(--header-h);
+                left: 0;
+                bottom: 0;
+                height: auto;
+                width: min(320px, 86vw);
+                padding: 24px 16px;
+                background: var(--bg-elev);
+                border-right: 1px solid var(--border);
+                z-index: 56;
+                overflow-y: auto;
+                transform: translateX(-100%);
+                transition: transform 220ms cubic-bezier(.2, .7, .2, 1);
+                box-shadow: 0 20px 60px -20px rgba(0, 0, 0, .4);
+            }
+
+            .rail.open {
+                transform: translateX(0);
+            }
+
+            .rail-backdrop {
+                display: block;
+                pointer-events: none;
+            }
+
+            .rail-backdrop.open {
+                pointer-events: auto;
+            }
+
+            .content {
+                padding-top: 32px;
+            }
+
+            .mobile-menu-toggle {
+                display: inline-flex;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .desktop-nav {
+                display: none;
+            }
+
+            .container {
+                padding-inline: 16px;
+            }
+
+            .hero {
+                padding: 64px 20px 56px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .terminal-body {
+                font-size: 13px;
+                padding: 12px 14px;
+            }
+
+            .terminal-chrome {
+                padding: 6px 10px;
+            }
+
+            .terminal-dots {
+                display: none;
+            }
+
+            .layout {
+                padding-inline: 16px;
+            }
+
+            .usage-trigger {
+                padding: 14px 16px;
+                gap: 10px;
+            }
+
+            .usage-desc {
+                display: none;
+            }
+
+            .usage-panel-content {
+                padding: 0 16px 18px;
+            }
+
+            .canvas {
+                padding: 12px;
+                border-radius: 12px;
+                margin: 16px 0 22px;
+            }
+
+            .canvas-window {
+                border-radius: 8px;
+            }
+
+            .canvas-chrome {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .canvas-dots span {
+                width: 9px;
+                height: 9px;
+            }
+
+            .canvas-code {
+                padding: 16px 18px;
+                font-size: 12px;
+            }
+
+            .apple-card-trigger {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+
+            .apple-card-content {
+                margin: 0 14px;
+            }
+
+            .newsletter {
+                padding: 24px;
+                border-radius: 18px;
+            }
+
+            .nl-head h3 {
+                font-size: 18px;
+            }
+
+            .nl-head p {
+                font-size: 13.5px;
+            }
+
+            .nl-form {
+                flex-direction: column;
+            }
+
+            .nl-submit {
+                width: 100%;
+                height: 48px;
+            }
+
+            .nl-input {
+                height: 48px;
+            }
+
+            .table-wrap {
+                font-size: 13px;
+            }
+
+            .table-wrap th,
+            .table-wrap td {
+                padding: 9px 11px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand span:last-child {
+                display: none;
+            }
+
+            .footer-brand .brand span:last-child {
+                display: inline;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+                animation: none !important;
+            }
+
+            .caret {
+                animation: none;
+                opacity: .7;
+            }
+
+            .footer-status-dot {
+                animation: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-<!-- ══════════ LEFT RAIL ══════════ -->
-<aside class="rail" id="rail">
-  <div class="rail-head">
-    <div class="rail-mark">U</div>
-    <div class="rail-title">
-      user-agents-generator
-      <span>v2.0.0 · node ≥20</span>
-    </div>
-  </div>
+    <a class="skip" href="#main">Skip to content</a>
 
-  <nav class="rail-nav">
-    <div class="rail-group">
-      <div class="rail-group-label">Overview</div>
-      <a class="rail-link active" href="#top"><span class="ico">◆</span> Introduction</a>
-      <a class="rail-link" href="#install"><span class="ico">↓</span> Install <span class="badge">npm</span></a>
-      <a class="rail-link" href="#features"><span class="ico">✦</span> Features</a>
-    </div>
-    <div class="rail-group">
-      <div class="rail-group-label">API</div>
-      <a class="rail-link" href="#api-legacy"><span class="ico">ƒ</span> Legacy methods</a>
-      <a class="rail-link" href="#api-v2"><span class="ico">+</span> v2 additions</a>
-      <a class="rail-link" href="#api-generate"><span class="ico">⚙</span> generate()</a>
-      <a class="rail-link" href="#api-headers"><span class="ico">▤</span> headers()</a>
-    </div>
-    <div class="rail-group">
-      <div class="rail-group-label">Guides</div>
-      <a class="rail-link" href="#why"><span class="ico">?</span> Why v2</a>
-      <a class="rail-link" href="#migrate"><span class="ico">⇄</span> Migrate from v1</a>
-      <a class="rail-link" href="#contribute"><span class="ico">⌥</span> Contributing</a>
-    </div>
-    <div class="rail-group">
-      <div class="rail-group-label">Resources</div>
-      <a class="rail-link" href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener"><span class="ico">↗</span> npm package</a>
-      <a class="rail-link" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener"><span class="ico">↗</span> GitHub repo</a>
-      <a class="rail-link" href="/llms.txt" target="_blank" rel="noopener"><span class="ico">∎</span> llms.txt</a>
-    </div>
-  </nav>
-
-  <div class="rail-foot">
-    <span>MIT licensed</span>
-    <a href="https://github.com/dropoutlab-dev" target="_blank" rel="noopener">@dropoutlab-dev</a>
-  </div>
-</aside>
-
-<!-- ══════════ MAIN ══════════ -->
-<div class="main">
-
-  <!-- top bar -->
-  <div class="topbar">
-    <button class="icon-btn menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
-    <div class="crumb"><b>docs</b> / <span id="crumbCurrent">introduction</span></div>
-    <div class="search" id="searchTrigger" role="button" tabindex="0">
-      <span>⌕</span><span>Search docs…</span>
-      <span class="k"><kbd>⌘</kbd><kbd>K</kbd></span>
-    </div>
-    <div class="topbar-actions">
-      <a class="icon-btn" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener" aria-label="GitHub">⌂</a>
-      <a class="icon-btn" href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener" aria-label="npm">◫</a>
-    </div>
-  </div>
-
-  <div class="content">
+    <header class="site-header" id="top">
+        <div class="container nav-shell">
+            <a class="brand" href="#top" aria-label="user-agents-generator home">
+                <span class="brand-mark" aria-hidden="true">ua</span>
+                <span>user-agents-generator</span>
+            </a>
+            <nav class="desktop-nav" aria-label="Main">
+                <a href="#features">Features</a>
+                <a href="#usage">Usage</a>
+                <a href="#api-legacy">API</a>
+                <a href="#hardening">Hosting</a>
+            </nav>
+            <div class="nav-actions">
+                <a class="star-badge" href="https://github.com/shaonkabir8/user-agents-generator" target="_blank" rel="noopener noreferrer" aria-label="user-agents-generator on GitHub">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                        <path d="M9 18c-4.51 2-5-2-7-2"></path>
+                    </svg>
+                    <span aria-hidden="true">★</span>
+                </a>
+                <a class="npm-link" href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener noreferrer" aria-label="user-agents-generator on npm">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M0 7.5h24v9H12v1.5H6v-1.5H0v-9Zm1.5 1.5v6H4.5v-4.5h1.5v4.5H7.5v-6h-6Zm9 0v6H15v-4.5h-1.5v4.5H12v-6h-1.5Zm7.5 0v6h1.5v-4.5H21v4.5h1.5v-6h-4.5Z" />
+                    </svg>
+                    npm
+                </a>
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Toggle appearance">
+                    <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                    </svg>
+                </button>
+                <button class="mobile-menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="rail" aria-label="Open documentation navigation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
 
     <!-- ══════════ HERO ══════════ -->
-    <section id="top" class="hero">
-      <div class="hero-eyebrow"><span class="live"></span> dataset synced · daily</div>
-      <h1>Realistic UA strings,<br/><span class="grad">generated not guessed.</span></h1>
-      <p class="lead">
-        Stop shipping Chrome 80 in 2025. <code>user-agents-generator</code> sources UA strings from a
-        maintained, traffic‑weighted dataset — with a graceful template fallback that never returns <code>""</code>.
-      </p>
+    <section class="hero" id="intro">
+        <span class="eyebrow">
+            <span class="dot" aria-hidden="true"></span>
+            v2.0.0 · MIT · Node ≥ 20
+        </span>
+        <h1 class="hero-title">Realistic User-Agent strings, on demand</h1>
+        <p class="hero-lede">
+            <strong>Stop shipping Chrome 80 in 2025.</strong> user-agents-generator sources UA strings from a maintained, traffic-weighted dataset — with a graceful template fallback that never returns <code>""</code>.
+        </p>
 
-      <!-- terminal -->
-      <div class="term" aria-label="Terminal example">
-        <div class="term-bar">
-          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-          <div class="term-tab"><span class="on">zsh</span><span>node</span></div>
+        <div class="terminal" role="region" aria-label="Install user-agents-generator">
+            <div class="terminal-chrome">
+                <div class="terminal-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                <div class="pkg-tabs" role="tablist" aria-label="Package manager">
+                    <button class="pkg-tab" id="tab-bun" role="tab" aria-selected="false" aria-controls="terminal-body" data-cmd="bun add user-agents-generator" tabindex="-1">bun</button>
+                    <button class="pkg-tab" id="tab-npm" role="tab" aria-selected="true" aria-controls="terminal-body" data-cmd="npm install user-agents-generator" tabindex="0">npm</button>
+                    <button class="pkg-tab" id="tab-pnpm" role="tab" aria-selected="false" aria-controls="terminal-body" data-cmd="pnpm add user-agents-generator" tabindex="-1">pnpm</button>
+                    <button class="pkg-tab" id="tab-yarn" role="tab" aria-selected="false" aria-controls="terminal-body" data-cmd="yarn add user-agents-generator" tabindex="-1">yarn</button>
+                </div>
+                <div class="terminal-actions" id="copyWrap">
+                    <button class="icon-btn" id="copyInstall" type="button" aria-label="Copy install command">
+                        <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <rect x="9" y="9" width="12" height="12" rx="2" />
+                            <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                        </svg>
+                        <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                    </button>
+                </div>
+                <span class="visually-hidden" id="copyStatus" role="status" aria-live="polite"></span>
+            </div>
+            <div class="terminal-body" id="terminal-body" role="tabpanel" aria-labelledby="tab-npm" tabindex="0">
+                <span class="prompt" aria-hidden="true"><span class="arrow">➜</span><span class="path">~</span></span>
+                <span class="typed" id="typed"></span><span class="caret" aria-hidden="true"></span>
+                <noscript><code style="color:var(--fg)">npm install user-agents-generator</code></noscript>
+            </div>
         </div>
-        <div class="term-body" id="termBody">
-          <span class="ln"><span class="prompt">❯</span><span class="cmd">npm i user-agents-generator</span></span>
-          <span class="ln out">added 1 package, 0 dependencies · 412 ms</span>
-          <span class="ln"><span class="prompt">❯</span><span class="cmd">node --input-type=module</span></span>
-          <span class="ln out">&gt; import { chrome, headers } from 'user-agents-generator'</span>
-          <span class="ln out">&gt; chrome()</span>
-          <span class="ln hi">'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'</span>
-          <span class="ln out">&gt; headers()['User-Agent'] === chrome()</span>
-          <span class="ln ok">true</span>
-          <span class="ln"><span class="prompt">❯</span><span class="cursor"></span></span>
+
+        <div class="hero-actions">
+            <a class="button button-primary" href="#usage">Get Started</a>
+            <a class="button button-secondary" href="#api-legacy">Browse API</a>
         </div>
-      </div>
 
-      <div class="quick">
-        <a class="btn btn-primary" href="#install">↓ Get started</a>
-        <a class="btn" href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">⌂ Star on GitHub</a>
-        <button class="btn" id="openPalette">⌘K Command palette</button>
-      </div>
-
-      <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:1rem">
-        <img src="https://img.shields.io/npm/v/user-agents-generator?style=flat-square&label=npm&color=7c5cff&labelColor=12121a" alt="npm" />
-        <img src="https://img.shields.io/badge/deps-0-34d399?style=flat-square&labelColor=12121a" alt="deps" />
-        <img src="https://img.shields.io/badge/node-%E2%89%A520-34d399?style=flat-square&labelColor=12121a" alt="node" />
-        <img src="https://img.shields.io/badge/ESM%20%2B%20CJS-✓-7c5cff?style=flat-square&labelColor=12121a" alt="modules" />
-        <img src="https://img.shields.io/badge/types-included-60a5fa?style=flat-square&labelColor=12121a" alt="types" />
-      </div>
+        <button class="agent-copy" id="agentCopy" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+            <span data-agent-label>Copy prompt for your agent</span>
+        </button>
     </section>
 
-    <!-- ══════════ INSTALL ══════════ -->
-    <section id="install">
-      <div class="sec-meta">01 · Setup</div>
-      <h2>↓ Install</h2>
-      <p class="sec-lead">One package. Zero runtime dependencies. Pick your package manager.</p>
+    <div class="layout">
+        <div class="rail-backdrop" id="railBackdrop" aria-hidden="true"></div>
 
-      <div class="install-tabs" role="tablist">
-        <button class="on" data-pm="npm" role="tab" aria-selected="true">npm</button>
-        <button data-pm="pnpm" role="tab" aria-selected="false">pnpm</button>
-        <button data-pm="yarn" role="tab" aria-selected="false">yarn</button>
-        <button data-pm="bun" role="tab" aria-selected="false">bun</button>
-      </div>
-      <div class="copyline">
-        <span class="p">$</span><span id="installCmd">npm install user-agents-generator</span>
-        <button class="copy-btn" data-copy="npm install user-agents-generator">copy</button>
-      </div>
-      <div class="callout"><span class="ic">ℹ</span><div><strong>Requires Node ≥ 20.</strong> Node 18 is end‑of‑life. The package ships <code>.d.ts</code>, works in both CJS and ESM, and has <strong>no postinstall script</strong>.</div></div>
-    </section>
+        <aside class="rail" id="rail" aria-label="Documentation navigation">
+            <nav>
+                <div class="rail-group">
+                    <h4>Getting started</h4>
+                    <ul class="rail-list">
+                        <li><a href="#intro">Introduction</a></li>
+                        <li><a href="#features">Features</a></li>
+                    </ul>
+                </div>
+                <div class="rail-group">
+                    <h4>Examples</h4>
+                    <ul class="rail-list">
+                        <li><a href="#usage">Usage</a></li>
+                    </ul>
+                </div>
+                <div class="rail-group">
+                    <h4>Reference</h4>
+                    <ul class="rail-list">
+                        <li><a href="#api-legacy">Legacy methods</a></li>
+                        <li><a href="#api-v2">v2 additions</a></li>
+                        <li><a href="#api-generate">generate()</a></li>
+                        <li><a href="#api-headers">headers()</a></li>
+                        <li><a href="#migration">Migration v1 → v2</a></li>
+                    </ul>
+                </div>
+                <div class="rail-group">
+                    <h4>Hosting</h4>
+                    <ul class="rail-list">
+                        <li><a href="#hardening">Hardening &amp; headers</a></li>
+                    </ul>
+                </div>
+                <div class="rail-group">
+                    <h4>Community</h4>
+                    <ul class="rail-list">
+                        <li><a href="#discussions">Discussion forum</a></li>
+                        <li><a href="#newsletter">Newsletter</a></li>
+                        <li><a href="#contribute">Contributing</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
 
-    <!-- ══════════ FEATURES ══════════ -->
-    <section id="features">
-      <div class="sec-meta">02 · Capabilities</div>
-      <h2>✦ Features</h2>
-      <p class="sec-lead">Everything a scraping, testing, or automation pipeline needs — nothing it doesn't.</p>
-      <div class="fgrid">
-        <div class="fcard"><div class="fcard-head"><span class="ico">📦</span><h3>Zero dependencies</h3></div><p>No transitive supply chain. No postinstall. Nothing to audit beyond the source you can read.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🛡️</span><h3>Header‑injection safe</h3></div><p><code>headers()</code> rejects CR, LF, control characters, empty strings, and anything over 512 chars.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🌐</span><h3>Traffic‑weighted</h3></div><p>Chrome appears as often as it does in the wild. Opera does not appear as often as Chrome.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🚀</span><h3>Loaded once</h3></div><p>The dataset is resolved at require‑time, not per call. No repeated I/O inside your hot loop.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🧪</span><h3>Tested on CI</h3></div><p><code>node:test</code> + GitHub Actions matrix on Node 20, 22, and 24. Audit runs on every push.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🅣</span><h3>Types shipped</h3></div><p><code>.d.ts</code> included. No <code>@types/</code> package to install, no <code>any</code> leakage.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🔁</span><h3>Single instance</h3></div><p><code>index.mjs</code> re‑exports <code>index.cjs</code>. CJS and ESM consumers share one dataset copy.</p></div>
-        <div class="fcard"><div class="fcard-head"><span class="ico">🍂</span><h3>Fails safe</h3></div><p>If the dataset cannot resolve, frozen 2025 templates take over. The return value is never <code>""</code>.</p></div>
-      </div>
-    </section>
+        <main id="main" class="content">
 
-    <!-- ══════════ API — LEGACY ══════════ -->
-    <section id="api-legacy">
-      <div class="sec-meta">03 · API</div>
-      <h2>ƒ Legacy methods</h2>
-      <p class="sec-lead">Unchanged names and signatures from v1. Upgrading does not require code changes.</p>
-      <table class="api-table">
-        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-        <tbody>
-          <tr><td>chrome()</td><td>Chrome on desktop</td></tr>
-          <tr><td>firefox()</td><td>Firefox on desktop</td></tr>
-          <tr><td>safari()</td><td>Safari on Apple platforms only — <strong>never Chromium‑family</strong></td></tr>
-          <tr><td>android()</td><td>Chrome on Android</td></tr>
-          <tr><td>ios()</td><td>Safari on iOS</td></tr>
-        </tbody>
-      </table>
-    </section>
+            <!-- ══════════ FEATURES ══════════ -->
+            <section class="section" id="features" data-section>
+                <div class="sec-meta">02 · Capabilities</div>
+                <h2>✦ Features</h2>
+                <p class="sec-lead">Everything a scraping, testing, or automation pipeline needs — nothing it doesn't.</p>
+                <div class="fgrid">
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">📦</span>
+                            <h3>Zero dependencies</h3>
+                        </div>
+                        <p>No transitive supply chain. No postinstall. Nothing to audit beyond the source you can read.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🛡️</span>
+                            <h3>Header‑injection safe</h3>
+                        </div>
+                        <p><code>headers()</code> rejects CR, LF, control characters, empty strings, and anything over 512 chars.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🌐</span>
+                            <h3>Traffic‑weighted</h3>
+                        </div>
+                        <p>Chrome appears as often as it does in the wild. Opera does not appear as often as Chrome.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🚀</span>
+                            <h3>Loaded once</h3>
+                        </div>
+                        <p>The dataset is resolved at require‑time, not per call. No repeated I/O inside your hot loop.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🧪</span>
+                            <h3>Tested on CI</h3>
+                        </div>
+                        <p><code>node:test</code> + GitHub Actions matrix on Node 20, 22, and 24. Audit runs on every push.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🅣</span>
+                            <h3>Types shipped</h3>
+                        </div>
+                        <p><code>.d.ts</code> included. No <code>@types/</code> package to install, no <code>any</code> leakage.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🔁</span>
+                            <h3>Single instance</h3>
+                        </div>
+                        <p><code>index.mjs</code> re‑exports <code>index.cjs</code>. CJS and ESM consumers share one dataset copy.</p>
+                    </div>
+                    <div class="fcard">
+                        <div class="fcard-head"><span class="ico">🍂</span>
+                            <h3>Fails safe</h3>
+                        </div>
+                        <p>If the dataset cannot resolve, frozen 2025 templates take over. The return value is never <code>""</code>.</p>
+                    </div>
+                </div>
+            </section>
 
-    <!-- ══════════ API — v2 ══════════ -->
-    <section id="api-v2">
-      <div class="sec-meta">03.1 · API</div>
-      <h2>+ Added in v2</h2>
-      <table class="api-table">
-        <thead><tr><th>Method</th><th>Returns</th></tr></thead>
-        <tbody>
-          <tr><td>edge()</td><td>Microsoft Edge on desktop</td></tr>
-          <tr><td>opera()</td><td>Opera on desktop</td></tr>
-          <tr><td>random()</td><td>Any family, weighted by the dataset</td></tr>
-          <tr><td>generate(options?)</td><td>A UA matching the given constraints</td></tr>
-          <tr><td>headers(ua?)</td><td>Object containing <code>User-Agent</code> and companion headers</td></tr>
-        </tbody>
-      </table>
-    </section>
+            <!-- ══════════ USAGE ══════════ -->
+            <section class="section" id="usage" data-section>
+                <div class="sec-meta">03 · Examples</div>
+                <h2>⌨ Usage</h2>
+                <p class="usage-intro">Four entry points for the same module. Pick the one that fits your runtime, expand it, and copy the snippet.</p>
 
-    <!-- ══════════ generate() ══════════ -->
-    <section id="api-generate">
-      <div class="sec-meta">03.2 · API</div>
-      <h2>⚙ generate(options)</h2>
-      <p class="sec-lead">All fields optional. Constraints are regex‑escaped before matching, so arbitrary strings are safe.</p>
-      <table class="api-table">
-        <thead><tr><th>Option</th><th>Type</th><th>Description</th></tr></thead>
-        <tbody>
-          <tr><td>browser</td><td>string</td><td>Family name or literal substring — <code>chrome</code>, <code>firefox</code>, <code>safari</code>, <code>edge</code>, <code>opera</code>, <code>android</code>, <code>ios</code></td></tr>
-          <tr><td>os</td><td>string</td><td><code>windows</code>, <code>macos</code>, <code>linux</code>, <code>android</code>, <code>ios</code>, or any literal substring</td></tr>
-          <tr><td>device</td><td>string</td><td><code>desktop</code>, <code>mobile</code>, or <code>tablet</code></td></tr>
-        </tbody>
-      </table>
-      <div class="callout"><span class="ic">💡</span><div><strong>Safe by design.</strong> <code>generate({ browser: 'chrome(' })</code> does not throw. A constraint that matches nothing falls back to an unconstrained draw. Non‑object input throws <code>TypeError</code>.</div></div>
-    </section>
+                <div class="usage-accordion" role="region" aria-label="Usage examples">
 
-    <!-- ══════════ headers() ══════════ -->
-    <section id="api-headers">
-      <div class="sec-meta">03.3 · API</div>
-      <h2>▤ headers(ua?)</h2>
-      <p class="sec-lead">Returns a ready‑to‑send header object. Validates the UA it is given.</p>
-      <table class="api-table">
-        <thead><tr><th>Behaviour</th><th>Detail</th></tr></thead>
-        <tbody>
-          <tr><td>Valid input</td><td>Returns <code>{ 'User-Agent', Accept, 'Accept-Language', 'Accept-Encoding' }</code></td></tr>
-          <tr><td>Invalid input</td><td>Throws <code>TypeError</code> on CR, LF, control chars, empty strings, or &gt; 512 characters</td></tr>
-          <tr><td>Why reject?</td><td>Silently stripping a CRLF would hide a header‑injection attempt</td></tr>
-        </tbody>
-      </table>
-    </section>
+                    <div class="usage-item">
+                        <button class="usage-trigger" type="button" id="usage-t-1" aria-expanded="true" aria-controls="usage-p-1">
+                            <span class="usage-num">01</span>
+                            <span class="usage-title">CommonJS</span>
+                            <span class="usage-desc">require() · Node 20+</span>
+                            <svg class="usage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="usage-panel open" id="usage-p-1" role="region" aria-labelledby="usage-t-1">
+                            <div class="usage-panel-inner">
+                                <div class="usage-panel-content">
+                                    <div class="canvas">
+                                        <div class="canvas-window">
+                                            <div class="canvas-chrome">
+                                                <div class="canvas-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                                                <span class="canvas-filename">index.js</span>
+                                                <button class="canvas-copy" data-copy-target="code-cjs" aria-label="Copy CommonJS example">
+                                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <rect x="9" y="9" width="12" height="12" rx="2" />
+                                                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                                                    </svg>
+                                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <path d="M20 6 9 17l-5-5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <pre class="canvas-code"><code id="code-cjs"><span class="tok-kw">const</span> ua <span class="tok-op">=</span> <span class="tok-fn">require</span>(<span class="tok-str">'user-agents-generator'</span>);
 
-    <!-- ══════════ WHY ══════════ -->
-    <section id="why">
-      <div class="sec-meta">04 · Context</div>
-      <h2>? Why v2</h2>
-      <p class="sec-lead">v1.0.2 was ~3 years unmaintained. Its hard‑coded UA ranges described browsers nobody runs any more.</p>
-      <div class="migrate">
-        <div class="migrate-col bad">
-          <h3>v1 · problems</h3>
-          <ul>
-            <li>Hard‑coded Chrome 60–80</li>
-            <li>Version ranges rot over time</li>
-            <li><code>safari()</code> sometimes returned Chrome</li>
-            <li>No tests, types, ESM, or CI</li>
-            <li>README install command was wrong</li>
-          </ul>
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">chrome</span>());
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">firefox</span>());
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">safari</span>());
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">android</span>());
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">ios</span>());
+<span class="tok-fn">console.log</span>(ua.<span class="tok-fn">random</span>());</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <button class="usage-trigger" type="button" id="usage-t-2" aria-expanded="false" aria-controls="usage-p-2">
+                            <span class="usage-num">02</span>
+                            <span class="usage-title">ESM</span>
+                            <span class="usage-desc">import · tree-shakeable</span>
+                            <svg class="usage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="usage-panel" id="usage-p-2" role="region" aria-labelledby="usage-t-2">
+                            <div class="usage-panel-inner">
+                                <div class="usage-panel-content">
+                                    <div class="canvas">
+                                        <div class="canvas-window">
+                                            <div class="canvas-chrome">
+                                                <div class="canvas-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                                                <span class="canvas-filename">index.mjs</span>
+                                                <button class="canvas-copy" data-copy-target="code-esm" aria-label="Copy ESM example">
+                                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <rect x="9" y="9" width="12" height="12" rx="2" />
+                                                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                                                    </svg>
+                                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <path d="M20 6 9 17l-5-5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <pre class="canvas-code"><code id="code-esm"><span class="tok-kw">import</span> { random, generate, headers } <span class="tok-kw">from</span> <span class="tok-str">'user-agents-generator'</span>;
+
+<span class="tok-kw">const</span> ua <span class="tok-op">=</span> <span class="tok-fn">random</span>();
+<span class="tok-fn">console.log</span>(ua);
+
+<span class="tok-kw">const</span> chromeMac <span class="tok-op">=</span> <span class="tok-fn">generate</span>({ browser: <span class="tok-str">'chrome'</span>, os: <span class="tok-str">'macos'</span> });
+<span class="tok-kw">const</span> h <span class="tok-op">=</span> <span class="tok-fn">headers</span>(ua);</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <button class="usage-trigger" type="button" id="usage-t-3" aria-expanded="false" aria-controls="usage-p-3">
+                            <span class="usage-num">03</span>
+                            <span class="usage-title">Puppeteer</span>
+                            <span class="usage-desc">Browser automation</span>
+                            <svg class="usage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="usage-panel" id="usage-p-3" role="region" aria-labelledby="usage-t-3">
+                            <div class="usage-panel-inner">
+                                <div class="usage-panel-content">
+                                    <div class="canvas">
+                                        <div class="canvas-window">
+                                            <div class="canvas-chrome">
+                                                <div class="canvas-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                                                <span class="canvas-filename">scrape.js</span>
+                                                <button class="canvas-copy" data-copy-target="code-puppeteer" aria-label="Copy Puppeteer example">
+                                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <rect x="9" y="9" width="12" height="12" rx="2" />
+                                                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                                                    </svg>
+                                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <path d="M20 6 9 17l-5-5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <pre class="canvas-code"><code id="code-puppeteer"><span class="tok-kw">const</span> puppeteer <span class="tok-op">=</span> <span class="tok-fn">require</span>(<span class="tok-str">'puppeteer'</span>);
+<span class="tok-kw">const</span> { chrome } <span class="tok-op">=</span> <span class="tok-fn">require</span>(<span class="tok-str">'user-agents-generator'</span>);
+
+(<span class="tok-kw">async</span> () =&gt; {
+  <span class="tok-kw">const</span> browser <span class="tok-op">=</span> <span class="tok-kw">await</span> puppeteer.<span class="tok-fn">launch</span>({
+    headless: <span class="tok-kw">true</span>,
+    args: [<span class="tok-str">`--user-agent=${chrome()}`</span>]
+  });
+  <span class="tok-kw">const</span> page <span class="tok-op">=</span> <span class="tok-kw">await</span> browser.<span class="tok-fn">newPage</span>();
+  <span class="tok-kw">await</span> page.<span class="tok-fn">goto</span>(<span class="tok-str">'https://example.com'</span>, { waitUntil: <span class="tok-str">'domcontentloaded'</span> });
+  <span class="tok-kw">await</span> browser.<span class="tok-fn">close</span>();
+})();</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="usage-item">
+                        <button class="usage-trigger" type="button" id="usage-t-4" aria-expanded="false" aria-controls="usage-p-4">
+                            <span class="usage-num">04</span>
+                            <span class="usage-title">Fetch with client hints</span>
+                            <span class="usage-desc">headers() · Sec-CH-UA</span>
+                            <svg class="usage-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="usage-panel" id="usage-p-4" role="region" aria-labelledby="usage-t-4">
+                            <div class="usage-panel-inner">
+                                <div class="usage-panel-content">
+                                    <div class="canvas">
+                                        <div class="canvas-window">
+                                            <div class="canvas-chrome">
+                                                <div class="canvas-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                                                <span class="canvas-filename">fetch.js</span>
+                                                <button class="canvas-copy" data-copy-target="code-fetch" aria-label="Copy fetch example">
+                                                    <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <rect x="9" y="9" width="12" height="12" rx="2" />
+                                                        <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+                                                    </svg>
+                                                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                        <path d="M20 6 9 17l-5-5" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <pre class="canvas-code"><code id="code-fetch"><span class="tok-kw">const</span> { headers } <span class="tok-op">=</span> <span class="tok-fn">require</span>(<span class="tok-str">'user-agents-generator'</span>);
+
+<span class="tok-kw">await</span> <span class="tok-fn">fetch</span>(<span class="tok-str">'https://example.com/api'</span>, {
+  headers: {
+    ...<span class="tok-fn">headers</span>(),
+    <span class="tok-str">'Accept'</span>: <span class="tok-str">'application/json'</span>
+  }
+});</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ══════════ API — LEGACY ══════════ -->
+            <section class="section" id="api-legacy" data-section>
+                <div class="sec-meta">03 · API</div>
+                <h2>ƒ Legacy methods</h2>
+                <p class="sec-lead">Unchanged names and signatures from v1. Upgrading does not require code changes.</p>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Returns</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>chrome()</td>
+                            <td>Chrome on desktop</td>
+                        </tr>
+                        <tr>
+                            <td>firefox()</td>
+                            <td>Firefox on desktop</td>
+                        </tr>
+                        <tr>
+                            <td>safari()</td>
+                            <td>Safari on Apple platforms only — <strong>never Chromium-family</strong></td>
+                        </tr>
+                        <tr>
+                            <td>android()</td>
+                            <td>Chrome on Android</td>
+                        </tr>
+                        <tr>
+                            <td>ios()</td>
+                            <td>Safari on iOS</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ══════════ API — v2 ══════════ -->
+            <section class="section" id="api-v2" data-section>
+                <div class="sec-meta">03.1 · API</div>
+                <h2>+ Added in v2</h2>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Returns</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>edge()</td>
+                            <td>Microsoft Edge on desktop</td>
+                        </tr>
+                        <tr>
+                            <td>opera()</td>
+                            <td>Opera on desktop</td>
+                        </tr>
+                        <tr>
+                            <td>random()</td>
+                            <td>Any family, weighted by the dataset</td>
+                        </tr>
+                        <tr>
+                            <td>generate(options?)</td>
+                            <td>A UA matching the given constraints</td>
+                        </tr>
+                        <tr>
+                            <td>headers(ua?)</td>
+                            <td>Object containing <code>User-Agent</code> and companion headers</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ══════════ API — generate() ══════════ -->
+            <section class="section" id="api-generate" data-section>
+                <div class="sec-meta">03.2 · API</div>
+                <h2>⚙ generate(options)</h2>
+                <p class="sec-lead">All fields optional. Constraints are regex-escaped before matching, so arbitrary strings are safe.</p>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>browser</td>
+                            <td>string</td>
+                            <td>Family name or literal substring — <code>chrome</code>, <code>firefox</code>, <code>safari</code>, <code>edge</code>, <code>opera</code>, <code>android</code>, <code>ios</code></td>
+                        </tr>
+                        <tr>
+                            <td>os</td>
+                            <td>string</td>
+                            <td><code>windows</code>, <code>macos</code>, <code>linux</code>, <code>android</code>, <code>ios</code>, or any literal substring</td>
+                        </tr>
+                        <tr>
+                            <td>device</td>
+                            <td>string</td>
+                            <td><code>desktop</code>, <code>mobile</code>, or <code>tablet</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="callout"><span class="ic">✓</span>
+                    <div><strong>Safe by design.</strong> <code>generate({ browser: 'chrome(' })</code> does not throw. A constraint that matches nothing falls back to an unconstrained draw. Non-object input throws <code>TypeError</code>.</div>
+                </div>
+            </section>
+
+            <!-- ══════════ API — headers() ══════════ -->
+            <section class="section" id="api-headers" data-section>
+                <div class="sec-meta">03.3 · API</div>
+                <h2>▤ headers(ua?)</h2>
+                <p class="sec-lead">Returns a ready-to-send header object. Validates the UA it is given.</p>
+                <table class="api-table">
+                    <thead>
+                        <tr>
+                            <th>Behaviour</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Valid input</td>
+                            <td>Returns <code>{ 'User-Agent', 'Accept', 'Accept-Language', 'Accept-Encoding' }</code></td>
+                        </tr>
+                        <tr>
+                            <td>Invalid input</td>
+                            <td>Throws <code>TypeError</code> on CR, LF, control chars, empty strings, or &gt; 512 characters</td>
+                        </tr>
+                        <tr>
+                            <td>Why reject?</td>
+                            <td>Silently stripping a CRLF would hide a header-injection attempt</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ══════════ MIGRATION ══════════ -->
+            <section class="section" id="migration" data-section>
+                <div class="sec-meta">05 · Upgrade</div>
+                <h2>⇄ Migration from v1</h2>
+                <p>v1 was unmaintained for roughly three years. v2 keeps the legacy method surface intact and adds typed output, ESM support, and client-hint headers.</p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Aspect</th>
+                                <th>v1</th>
+                                <th>v2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Install</td>
+                                <td><code>npm i user-agents</code></td>
+                                <td><code>npm i user-agents-generator</code></td>
+                            </tr>
+                            <tr>
+                                <td>Import (CJS)</td>
+                                <td><code>require('user-agents')</code></td>
+                                <td><code>require('user-agents-generator')</code></td>
+                            </tr>
+                            <tr>
+                                <td>Import (ESM)</td>
+                                <td>—</td>
+                                <td><code>import { chrome } from 'user-agents-generator'</code></td>
+                            </tr>
+                            <tr>
+                                <td>TypeScript</td>
+                                <td>None</td>
+                                <td><code>index.d.ts</code> shipped</td>
+                            </tr>
+                            <tr>
+                                <td>Headers helper</td>
+                                <td>—</td>
+                                <td><code>headers(ua?)</code> for client-hints</td>
+                            </tr>
+                            <tr>
+                                <td>Constrained generation</td>
+                                <td>—</td>
+                                <td><code>generate(options)</code></td>
+                            </tr>
+                            <tr>
+                                <td>Dataset update</td>
+                                <td>Manual</td>
+                                <td>Synced daily; fallback baked in</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Migration checklist</h3>
+                <ul>
+                    <li>Replace the <code>user-agents</code> dependency with <code>user-agents-generator</code>.</li>
+                    <li>Update every <code>require</code> / <code>import</code> path.</li>
+                    <li>Legacy calls (<code>chrome()</code>, <code>firefox()</code>, <code>safari()</code>, <code>android()</code>, <code>ios()</code>, <code>random()</code>) work unchanged.</li>
+                    <li>Adopt <code>headers()</code> in fetch calls if you currently set <code>User-Agent</code> manually — you'll get consistent client hints for free.</li>
+                    <li>Node ≥ 20 is required.</li>
+                </ul>
+            </section>
+
+            <!-- ══════════ DISCUSSIONS ══════════ -->
+            <section class="section" id="discussions" data-section>
+                <div class="sec-meta">06 · Community</div>
+                <h2>💬 Discussion forum</h2>
+                <p class="sec-lead">GitHub Discussions is the support channel. Issues are for defects and accepted work; Discussions is for everything that starts with a question.</p>
+
+                <div class="contrib">
+                    <a href="https://github.com/shaonkabir8/user-agents-generator/discussions/categories/announcements" target="_blank" rel="noopener"><span class="ico">📣</span> Announcements</a>
+                    <a href="https://github.com/shaonkabir8/user-agents-generator/discussions/categories/q-a" target="_blank" rel="noopener"><span class="ico">❓</span> Q&amp;A</a>
+                    <a href="https://github.com/shaonkabir8/user-agents-generator/discussions/categories/ideas" target="_blank" rel="noopener"><span class="ico">💡</span> Ideas</a>
+                    <a href="https://github.com/shaonkabir8/user-agents-generator/discussions/categories/show-and-tell" target="_blank" rel="noopener"><span class="ico">🚀</span> Show &amp; tell</a>
+                </div>
+
+                <div class="callout" style="margin-top:1rem"><span class="ic">⚙</span>
+                    <div><strong>Maintainer note.</strong> Discussions cannot be switched on through the REST or GraphQL API — there is no enable endpoint. Use <code>gh repo edit --enable-discussions</code> or <strong>Settings → General → Features → Discussions</strong>.</div>
+                </div>
+            </section>
+
+            <!-- ══════════ NEWSLETTER ══════════ -->
+            <section class="section newsletter-section" id="newsletter" data-section>
+                <div class="sec-meta">07 · Newsletter</div>
+                <h2>✉ Release notes</h2>
+                <p class="sec-lead">One email per release. Dataset syncs, version bumps, and the occasional behind-the-scenes note — nothing else.</p>
+
+                <div class="newsletter">
+                    <div class="nl-head">
+                        <span class="nl-badge" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                <path d="m2 7 10 6 10-6" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h3>Get the release notes</h3>
+                            <p>Feel free to trust us. We don't send any spam — just releases, dataset drops, and the occasional note from the maintainers. Double opt-in, one-click unsubscribe, never sold or shared.</p>
+                        </div>
+                    </div>
+
+                    <form class="nl-form" id="nlForm" action="https://buttondown.com/api/emails/embed-subscribe/BUTTONDOWN_USERNAME" method="post" target="_blank" novalidate>
+                        <div class="nl-field">
+                            <input class="nl-input" id="nlEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder=" " required aria-describedby="nlStatus">
+                            <label class="nl-label" for="nlEmail">you@example.com</label>
+                        </div>
+                        <button class="nl-submit" id="nlSubmit" type="submit">
+                            <span>Join DropOutLab Family</span>
+                            <svg class="nl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14M13 6l6 6-6 6" />
+                            </svg>
+                            <svg class="nl-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                        </button>
+                    </form>
+
+                    <p class="nl-status" id="nlStatus" role="status" aria-live="polite"></p>
+
+                    <ul class="nl-trust">
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>No spam, ever</li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>One-click unsubscribe</li>
+                        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>Never sold or shared</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ══════════ ENHANCED FOOTER ══════════ -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="footer-brand">
+                <a class="brand" href="#top" aria-label="user-agents-generator home">
+                    <span class="brand-mark" aria-hidden="true">ua</span>
+                    <span>user-agents-generator</span>
+                </a>
+                <p class="footer-tagline">Dataset-backed, realistic User-Agent strings for Chrome, Firefox, Safari, Edge, Opera, Android and iOS. Zero dependencies. MIT licensed.</p>
+                <div class="footer-socials">
+                    <a href="https://github.com/shaonkabir8/user-agents-generator" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.09 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56v-2.18c-3.2.7-3.87-1.36-3.87-1.36-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.74.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.71 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 2.9-.39c.98 0 1.97.13 2.9.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.44-2.7 5.42-5.27 5.71.41.35.78 1.05.78 2.12v3.14c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z" />
+                        </svg>
+                    </a>
+                    <a href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener noreferrer" aria-label="npm package">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M0 7.5h24v9H12v1.5H6v-1.5H0v-9Zm1.5 1.5v6H4.5v-4.5h1.5v4.5H7.5v-6h-6Zm9 0v6H15v-4.5h-1.5v4.5H12v-6h-1.5Zm7.5 0v6h1.5v-4.5H21v4.5h1.5v-6h-4.5Z" />
+                        </svg>
+                    </a>
+                    <a href="https://github.com/shaonkabir8/user-agents-generator/discussions" target="_blank" rel="noopener noreferrer" aria-label="GitHub Discussions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <nav class="footer-col" aria-label="Product">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#usage">Usage examples</a></li>
+                    <li><a href="#api-legacy">API reference</a></li>
+                    <li><a href="#migration">Migration guide</a></li>
+                </ul>
+            </nav>
+
+            <nav class="footer-col" aria-label="Resources">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="./llms.txt">llms.txt</a></li>
+                    <li><a href="./robots.txt">robots.txt</a></li>
+                    <li><a href="./sitemap.xml">sitemap.xml</a></li>
+                    <li><a href="#hardening">Security posture</a></li>
+                </ul>
+            </nav>
+
+            <nav class="footer-col" aria-label="Community">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="#discussions">Discussions</a></li>
+                    <li><a href="#newsletter">Newsletter</a></li>
+                    <li><a href="https://github.com/shaonkabir8/user-agents-generator/issues" target="_blank" rel="noopener noreferrer">Issues</a></li>
+                    <li><a href="https://github.com/shaonkabir8/user-agents-generator/pulls" target="_blank" rel="noopener noreferrer">Pull requests</a></li>
+                </ul>
+            </nav>
         </div>
-        <div class="migrate-col good">
-          <h3>v2 · fixes</h3>
-          <ul>
-            <li>Dataset‑sourced, updated daily</li>
-            <li>Traffic‑weighted selection</li>
-            <li><code>safari()</code> is predicate‑filtered</li>
-            <li><code>node:test</code>, CI, types, ESM</li>
-            <li>Metadata and docs corrected</li>
-          </ul>
+
+        <div class="footer-bottom">
+            <p>© 2022~2026 user-agents-generator · Built by <a href="https://github.com/dropoutlab-dev" target="_blank" rel="noopener noreferrer">DropOutLab</a> · Maintained by <a href="https://github.com/shaonkabir8" target="_blank" rel="noopener noreferrer">Shaon Kabir</a> · MIT licensed.</p>
+            <div class="footer-status">
+                <span class="footer-status-dot" aria-hidden="true"></span>
+                <span>All systems operational</span>
+            </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ══════════ MIGRATE ══════════ -->
-    <section id="migrate">
-      <div class="sec-meta">05 · Upgrade</div>
-      <h2>⇄ Migrate from v1</h2>
-      <p class="sec-lead">Upgrading is a version bump — no code changes are required for the legacy API.</p>
-      <table class="api-table">
-        <thead><tr><th>v1</th><th>v2</th></tr></thead>
-        <tbody>
-          <tr><td><code>npm i user-agent-generator</code> ⚠</td><td><code>npm i user-agents-generator</code> ✓</td></tr>
-          <tr><td>Node.js any version</td><td>Node.js ≥ 20</td></tr>
-          <tr><td>Hard‑coded UA ranges</td><td>Dataset‑sourced, daily</td></tr>
-          <tr><td>No tests / CI / types</td><td><code>node:test</code> · Actions · <code>.d.ts</code></td></tr>
-          <tr><td><code>safari()</code> could return Chrome</td><td><code>safari()</code> is Safari only</td></tr>
-          <tr><td>CommonJS only</td><td>CommonJS + ESM</td></tr>
-        </tbody>
-      </table>
-      <div class="callout"><span class="ic">⚠</span><div>UA strings are <strong>not byte‑identical</strong> to v1 — they now describe current browsers.</div></div>
-    </section>
-
-    <!-- ══════════ CONTRIBUTE ══════════ -->
-    <section id="contribute">
-      <div class="sec-meta">06 · Community</div>
-      <h2>⌥ Contributing</h2>
-      <p class="sec-lead">Issues, docs, tests, and features are all welcome. Read the checklist before opening a PR.</p>
-      <div class="contrib">
-        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues/new" target="_blank" rel="noopener"><span class="ico">🐛</span> Report a bug</a>
-        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues/new" target="_blank" rel="noopener"><span class="ico">💡</span> Request a feature</a>
-        <a href="https://github.com/dropoutlab-dev/user-agents-generator/pulls" target="_blank" rel="noopener"><span class="ico">⌥</span> Open a PR</a>
-        <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues" target="_blank" rel="noopener"><span class="ico">?</span> Ask a question</a>
-      </div>
-      <div class="callout" style="margin-top:1rem"><span class="ic">✓</span><div><strong>Before you open a PR:</strong> fork → <code>npm ci &amp;&amp; npm test</code> → add tests → follow commit style → open the PR.</div></div>
-    </section>
-
-    <!-- ══════════ FOOTER ══════════ -->
-    <footer>
-      <div class="foot-row">
-        <div class="foot-links">
-          <a href="https://www.npmjs.com/package/user-agents-generator" target="_blank" rel="noopener">npm</a>
-          <a href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">GitHub</a>
-          <a href="https://github.com/dropoutlab-dev/user-agents-generator/issues" target="_blank" rel="noopener">Issues</a>
-          <a href="https://github.com/dropoutlab-dev/user-agents-generator/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>
-          <a href="/llms.txt" target="_blank" rel="noopener">llms.txt</a>
-          <a href="/robots.txt" target="_blank" rel="noopener">robots.txt</a>
-        </div>
-        <div>Made with ❤ by the open‑source community · <a href="https://github.com/dropoutlab-dev/user-agents-generator" target="_blank" rel="noopener">star the repo</a></div>
-      </div>
     </footer>
 
-  </div><!-- /content -->
-</div><!-- /main -->
-
-<!-- ══════════ COMMAND PALETTE ══════════ -->
-<div class="palette-overlay" id="paletteOverlay" role="dialog" aria-modal="true" aria-label="Command palette">
-  <div class="palette">
-    <input class="palette-input" id="paletteInput" placeholder="Jump to section…" autocomplete="off" />
-    <div class="palette-list" id="paletteList">
-      <div class="palette-item" data-target="#top"><span>◆</span> Introduction <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#install"><span>↓</span> Install <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#features"><span>✦</span> Features <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#api-legacy"><span>ƒ</span> Legacy methods <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#api-v2"><span>+</span> v2 additions <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#api-generate"><span>⚙</span> generate() <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#api-headers"><span>▤</span> headers() <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#why"><span>?</span> Why v2 <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#migrate"><span>⇄</span> Migrate from v1 <span class="k">↵</span></div>
-      <div class="palette-item" data-target="#contribute"><span>⌥</span> Contributing <span class="k">↵</span></div>
+    <!-- ══════════ ON-SCROLL CTA ══════════ -->
+    <div class="scroll-cta" id="scrollCta" aria-hidden="true">
+        <button type="button" class="scroll-up" id="scrollUp" aria-label="Scroll to top" title="Scroll to top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m18 15-6-6-6 6" />
+            </svg>
+        </button>
+        <div class="scroll-cta-divider" aria-hidden="true"></div>
+        <button type="button" class="scroll-down" id="scrollDown" aria-label="Scroll to bottom" title="Scroll to bottom">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m6 9 6 6 6-6" />
+            </svg>
+        </button>
     </div>
-  </div>
-</div>
 
-<script>
-(function(){
-  'use strict';
+    <!-- ══════════ COMMAND PALETTE ══════════ -->
+    <div class="palette-backdrop" id="paletteBackdrop" hidden>
+        <div class="palette" role="dialog" aria-modal="true" aria-labelledby="paletteTitle">
+            <h2 id="paletteTitle" class="visually-hidden">Search documentation</h2>
+            <div class="palette-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input class="palette-input" id="paletteInput" type="text" placeholder="Search docs… (⌘K)" autocomplete="off" spellcheck="false" aria-controls="paletteResults" aria-autocomplete="list">
+            </div>
+            <ul class="palette-results" id="paletteResults" role="listbox"></ul>
+            <div class="palette-foot">
+                <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+                <span><kbd>↵</kbd> Jump</span>
+                <span><kbd>esc</kbd> Close</span>
+            </div>
+        </div>
+    </div>
 
-  /* ---------- package-manager tabs ---------- */
-  var pmCmds = {
-    npm:  'npm install user-agents-generator',
-    pnpm: 'pnpm add user-agents-generator',
-    yarn: 'yarn add user-agents-generator',
-    bun:  'bun add user-agents-generator'
-  };
-  var tabs = document.querySelectorAll('.install-tabs button');
-  var cmdEl = document.getElementById('installCmd');
-  var copyBtn = document.querySelector('.copy-btn');
-  tabs.forEach(function(b){
-    b.addEventListener('click', function(){
-      tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
-      b.classList.add('on'); b.setAttribute('aria-selected','true');
-      var pm = b.dataset.pm;
-      cmdEl.textContent = pmCmds[pm];
-      copyBtn.dataset.copy = pmCmds[pm];
-    });
-  });
+    <script>
+        (function() {
+            'use strict';
 
-  /* ---------- copy buttons ---------- */
-  document.querySelectorAll('.copy-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var text = btn.dataset.copy; if(!text) return;
-      var flash = function(){
-        var old = btn.textContent;
-        btn.textContent = 'copied';
-        setTimeout(function(){ btn.textContent = old; }, 1200);
-      };
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(flash).catch(fallback);
-      } else { fallback(); }
-      function fallback(){
-        var ta = document.createElement('textarea');
-        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-        document.body.appendChild(ta); ta.select();
-        try{ document.execCommand('copy'); flash(); }catch(e){}
-        document.body.removeChild(ta);
-      }
-    });
-  });
+            var root = document.documentElement;
+            var prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- command palette ---------- */
-  var overlay = document.getElementById('paletteOverlay');
-  var input   = document.getElementById('paletteInput');
-  var list    = document.getElementById('paletteList');
-  var items   = Array.prototype.slice.call(list.querySelectorAll('.palette-item'));
-  var selected = 0;
+            /* Theme */
+            var themeToggle = document.getElementById('themeToggle');
 
-  function openPalette(){
-    overlay.classList.add('on');
-    input.value = '';
-    selected = 0;
-    render();
-    setTimeout(function(){ input.focus(); }, 30);
-  }
-  function closePalette(){
-    overlay.classList.remove('on');
-  }
-  function render(){
-    var q = input.value.toLowerCase().trim();
-    items.forEach(function(it){
-      it.style.display = it.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
-    });
-    var visible = items.filter(function(it){ return it.style.display !== 'none'; });
-    if(selected >= visible.length) selected = 0;
-    items.forEach(function(it){ it.classList.remove('sel'); });
-    if(visible[selected]) visible[selected].classList.add('sel');
-  }
-  function goTo(target){
-    var el = document.querySelector(target);
-    if(el){ el.scrollIntoView({behavior:'smooth'}); }
-    closePalette();
-  }
+            function applyTheme(t) {
+                root.setAttribute('data-theme', t);
+                var meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) meta.setAttribute('content', t === 'dark' ? '#08080c' : '#fafafa');
+                themeToggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+            var savedTheme = null;
+            try {
+                savedTheme = localStorage.getItem('ua-theme');
+            } catch (e) {}
+            applyTheme(savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+            themeToggle.addEventListener('click', function() {
+                var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                applyTheme(next);
+                try {
+                    localStorage.setItem('ua-theme', next);
+                } catch (e) {}
+            });
+            matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(ev) {
+                try {
+                    if (localStorage.getItem('ua-theme')) return;
+                } catch (e) {}
+                applyTheme(ev.matches ? 'dark' : 'light');
+            });
 
-  input.addEventListener('input', render);
-  input.addEventListener('keydown', function(e){
-    var visible = items.filter(function(it){ return it.style.display !== 'none'; });
-    if(e.key === 'ArrowDown'){ e.preventDefault(); selected = Math.min(selected+1, visible.length-1); render(); }
-    else if(e.key === 'ArrowUp'){ e.preventDefault(); selected = Math.max(selected-1, 0); render(); }
-    else if(e.key === 'Enter'){ e.preventDefault(); if(visible[selected]) goTo(visible[selected].dataset.target); }
-    else if(e.key === 'Escape'){ closePalette(); }
-  });
-  items.forEach(function(it){
-    it.addEventListener('click', function(){ goTo(it.dataset.target); });
-  });
-  overlay.addEventListener('click', function(e){ if(e.target === overlay) closePalette(); });
+            /* Mobile rail drawer */
+            var menuToggle = document.getElementById('menuToggle');
+            var rail = document.getElementById('rail');
+            var railBackdrop = document.getElementById('railBackdrop');
 
-  document.addEventListener('keydown', function(e){
-    if((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); openPalette(); }
-    if(e.key === '/' && document.activeElement.tagName !== 'INPUT'){
-      e.preventDefault(); openPalette();
-    }
-    if(e.key === 'Escape') closePalette();
-  });
-  document.getElementById('openPalette').addEventListener('click', openPalette);
-  document.getElementById('searchTrigger').addEventListener('click', openPalette);
-  document.getElementById('searchTrigger').addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openPalette(); }
-  });
+            function isMobile() {
+                return window.matchMedia('(max-width: 960px)').matches;
+            }
 
-  /* ---------- mobile menu ---------- */
-  var rail = document.getElementById('rail');
-  document.getElementById('menuToggle').addEventListener('click', function(){
-    rail.classList.toggle('open');
-  });
-  rail.addEventListener('click', function(e){
-    if(e.target.closest('a') && window.innerWidth <= 900) rail.classList.remove('open');
-  });
+            function setRail(open) {
+                if (!isMobile()) return;
+                rail.classList.toggle('open', open);
+                railBackdrop.classList.toggle('open', open);
+                menuToggle.setAttribute('aria-expanded', String(open));
+                menuToggle.setAttribute('aria-label', open ? 'Close documentation navigation' : 'Open documentation navigation');
+                document.body.style.overflow = open ? 'hidden' : '';
+            }
+            menuToggle.addEventListener('click', function() {
+                setRail(!rail.classList.contains('open'));
+            });
+            railBackdrop.addEventListener('click', function() {
+                setRail(false);
+            });
+            rail.addEventListener('click', function(ev) {
+                if (ev.target.closest('a') && isMobile()) setRail(false);
+            });
+            document.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Escape' && rail.classList.contains('open')) setRail(false);
+            });
+            window.addEventListener('resize', function() {
+                if (!isMobile() && rail.classList.contains('open')) {
+                    rail.classList.remove('open');
+                    railBackdrop.classList.remove('open');
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    document.body.style.overflow = '';
+                }
+            });
 
-  /* ---------- active rail + crumb ---------- */
-  var sections = document.querySelectorAll('section[id]');
-  var railLinks = document.querySelectorAll('.rail-link');
-  var crumbCurrent = document.getElementById('crumbCurrent');
-  var crumbMap = {
-    'top':'introduction','install':'install','features':'features',
-    'api-legacy':'api / legacy','api-v2':'api / v2','api-generate':'api / generate',
-    'api-headers':'api / headers','why':'why v2','migrate':'migrate','contribute':'contributing'
-  };
-  if('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){
-        if(en.isIntersecting){
-          var id = en.target.id;
-          railLinks.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#'+id); });
-          crumbCurrent.textContent = crumbMap[id] || id;
-        }
-      });
-    }, {rootMargin:'-30% 0px -60% 0px'});
-    sections.forEach(function(s){ io.observe(s); });
-  }
-})();
-</script>
+            /* Usage accordion — one open at a time */
+            (function() {
+                var items = Array.prototype.slice.call(document.querySelectorAll('.usage-item'));
+                if (!items.length) return;
+                items.forEach(function(item) {
+                    var trigger = item.querySelector('.usage-trigger');
+                    var panel = item.querySelector('.usage-panel');
+                    trigger.addEventListener('click', function() {
+                        var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+                        items.forEach(function(other) {
+                            var ot = other.querySelector('.usage-trigger');
+                            var op = other.querySelector('.usage-panel');
+                            ot.setAttribute('aria-expanded', 'false');
+                            op.classList.remove('open');
+                        });
+                        if (!isOpen) {
+                            trigger.setAttribute('aria-expanded', 'true');
+                            panel.classList.add('open');
+                        }
+                    });
+                    trigger.addEventListener('keydown', function(ev) {
+                        var i = items.indexOf(item);
+                        var next = null;
+                        if (ev.key === 'ArrowDown') next = items[(i + 1) % items.length];
+                        else if (ev.key === 'ArrowUp') next = items[(i - 1 + items.length) % items.length];
+                        else if (ev.key === 'Home') next = items[0];
+                        else if (ev.key === 'End') next = items[items.length - 1];
+                        if (next) {
+                            ev.preventDefault();
+                            next.querySelector('.usage-trigger').focus();
+                        }
+                    });
+                });
+            })();
+
+            /* Apple-style expandable cards */
+            (function() {
+                var cards = Array.prototype.slice.call(document.querySelectorAll('.apple-card'));
+                if (!cards.length) return;
+                cards.forEach(function(card) {
+                    var trigger = card.querySelector('.apple-card-trigger');
+                    trigger.addEventListener('click', function() {
+                        var open = card.classList.toggle('is-open');
+                        trigger.setAttribute('aria-expanded', String(open));
+                    });
+                });
+            })();
+
+            /* Clipboard */
+            function legacyCopy(text) {
+                return new Promise(function(resolve, reject) {
+                    var ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try {
+                        var ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        ok ? resolve() : reject(new Error('copy failed'));
+                    } catch (e) {
+                        document.body.removeChild(ta);
+                        reject(e);
+                    }
+                });
+            }
+
+            function copyText(text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(text).catch(function() {
+                        return legacyCopy(text);
+                    });
+                }
+                return legacyCopy(text);
+            }
+
+            /* Install terminal — tabs + typing */
+            (function() {
+                var tabs = Array.prototype.slice.call(document.querySelectorAll('.pkg-tab'));
+                var typed = document.getElementById('typed');
+                var panel = document.getElementById('terminal-body');
+                if (!typed || !tabs.length) return;
+
+                var current = 'npm install user-agents-generator';
+                var typeTimer = null;
+
+                function typeCommand(cmd, animate) {
+                    current = cmd;
+                    if (typeTimer) {
+                        clearTimeout(typeTimer);
+                        typeTimer = null;
+                    }
+                    typed.textContent = '';
+                    if (!animate || prefersReduced) {
+                        typed.textContent = cmd;
+                        return;
+                    }
+                    var i = 0;
+                    (function step() {
+                        typed.textContent = cmd.slice(0, ++i);
+                        if (i < cmd.length) typeTimer = setTimeout(step, 26);
+                    })();
+                }
+
+                function selectTab(tab, animate) {
+                    tabs.forEach(function(t) {
+                        var on = t === tab;
+                        t.setAttribute('aria-selected', on ? 'true' : 'false');
+                        t.tabIndex = on ? 0 : -1;
+                    });
+                    if (panel) panel.setAttribute('aria-labelledby', tab.id);
+                    typeCommand(tab.getAttribute('data-cmd'), animate);
+                }
+
+                tabs.forEach(function(tab, index) {
+                    tab.addEventListener('click', function() {
+                        selectTab(tab, true);
+                    });
+                    tab.addEventListener('keydown', function(ev) {
+                        var next = null;
+                        if (ev.key === 'ArrowRight') next = tabs[(index + 1) % tabs.length];
+                        else if (ev.key === 'ArrowLeft') next = tabs[(index - 1 + tabs.length) % tabs.length];
+                        else if (ev.key === 'Home') next = tabs[0];
+                        else if (ev.key === 'End') next = tabs[tabs.length - 1];
+                        if (next) {
+                            ev.preventDefault();
+                            next.focus();
+                            selectTab(next, true);
+                        }
+                    });
+                });
+
+                typeCommand(current, true);
+            })();
+
+            /* Copy install command */
+            (function() {
+                var wrap = document.getElementById('copyWrap');
+                var btn = document.getElementById('copyInstall');
+                var status = document.getElementById('copyStatus');
+                var typed = document.getElementById('typed');
+                if (!btn || !wrap) return;
+
+                btn.addEventListener('click', function() {
+                    var selected = document.querySelector('.pkg-tab[aria-selected="true"]');
+                    var text = selected ? selected.getAttribute('data-cmd') : (typed ? typed.textContent : '');
+                    if (!text) return;
+                    copyText(text).then(function() {
+                        wrap.classList.add('copied');
+                        if (status) status.textContent = 'Install command copied to clipboard';
+                        setTimeout(function() {
+                            wrap.classList.remove('copied');
+                        }, 1800);
+                    }).catch(function() {
+                        if (status) status.textContent = 'Copy failed — select the command manually';
+                    });
+                });
+            })();
+
+            /* Copy buttons inside canvas windows */
+            Array.prototype.forEach.call(document.querySelectorAll('.canvas-copy'), function(btn) {
+                btn.addEventListener('click', function() {
+                    var target = document.getElementById(btn.getAttribute('data-copy-target'));
+                    if (!target) return;
+                    copyText(target.textContent).then(function() {
+                        btn.classList.add('copied');
+                        setTimeout(function() {
+                            btn.classList.remove('copied');
+                        }, 1600);
+                    }).catch(function() {});
+                });
+            });
+
+            /* Agent prompt copy */
+            (function() {
+                var btn = document.getElementById('agentCopy');
+                if (!btn) return;
+                var label = btn.querySelector('[data-agent-label]');
+                var prompt = 'Use the npm package `user-agents-generator` (v2, Node 20+, zero dependencies, MIT). ' +
+                    'It exports chrome(), firefox(), safari(), android(), ios(), edge(), opera(), random(), ' +
+                    'generate({ browser, os, device }) and headers(ua). Prefer random() for a traffic-weighted ' +
+                    'string and generate({ ... }) when a specific family, OS, or device is required. Pass the value ' +
+                    'into the User-Agent header or a browser launch argument — never hand-write UA strings.';
+
+                btn.addEventListener('click', function() {
+                    copyText(prompt).then(function() {
+                        var original = label.textContent;
+                        label.textContent = 'Copied to clipboard';
+                        btn.classList.add('copied');
+                        setTimeout(function() {
+                            label.textContent = original;
+                            btn.classList.remove('copied');
+                        }, 1800);
+                    }).catch(function() {});
+                });
+            })();
+
+            /* Rail scroll-spy */
+            (function() {
+                var links = Array.prototype.slice.call(document.querySelectorAll('.rail-list a'));
+                if (!links.length || !('IntersectionObserver' in window)) return;
+                var byId = {};
+                links.forEach(function(a) {
+                    var id = a.getAttribute('href').slice(1);
+                    if (id) byId[id] = a;
+                });
+                var io = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (!entry.isIntersecting) return;
+                        var active = byId[entry.target.id];
+                        if (!active) return;
+                        links.forEach(function(a) {
+                            a.classList.toggle('active', a === active);
+                        });
+                    });
+                }, {
+                    rootMargin: '-72px 0px -60% 0px',
+                    threshold: 0
+                });
+                Object.keys(byId).forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) io.observe(el);
+                });
+            })();
+
+            /* Command palette */
+            (function() {
+                var backdrop = document.getElementById('paletteBackdrop');
+                var input = document.getElementById('paletteInput');
+                var results = document.getElementById('paletteResults');
+                if (!backdrop || !input || !results) return;
+
+                var items = [];
+                var seen = {};
+                Array.prototype.forEach.call(document.querySelectorAll('.rail-list a'), function(a) {
+                    var href = a.getAttribute('href');
+                    if (!href || seen[href]) return;
+                    seen[href] = true;
+                    var group = a.closest('.rail-group');
+                    var heading = group ? group.querySelector('h4') : null;
+                    items.push({
+                        label: a.textContent.trim(),
+                        group: heading ? heading.textContent.trim() : 'Docs',
+                        href: href
+                    });
+                });
+                if (!items.length) return;
+
+                var current = [];
+                var selected = 0;
+
+                function makeLabel(text, q) {
+                    var frag = document.createDocumentFragment();
+                    if (!q) {
+                        frag.appendChild(document.createTextNode(text));
+                        return frag;
+                    }
+                    var idx = text.toLowerCase().indexOf(q);
+                    if (idx === -1) {
+                        frag.appendChild(document.createTextNode(text));
+                        return frag;
+                    }
+                    frag.appendChild(document.createTextNode(text.slice(0, idx)));
+                    var mark = document.createElement('mark');
+                    mark.textContent = text.slice(idx, idx + q.length);
+                    frag.appendChild(mark);
+                    frag.appendChild(document.createTextNode(text.slice(idx + q.length)));
+                    return frag;
+                }
+
+                function render(query) {
+                    var q = query.trim().toLowerCase();
+                    current = items.filter(function(it) {
+                        return !q || (it.label + ' ' + it.group).toLowerCase().indexOf(q) !== -1;
+                    });
+                    selected = 0;
+                    results.textContent = '';
+
+                    if (!current.length) {
+                        var empty = document.createElement('li');
+                        empty.className = 'palette-empty';
+                        empty.textContent = 'No matches for “' + query.trim() + '”';
+                        results.appendChild(empty);
+                        return;
+                    }
+
+                    current.forEach(function(it, i) {
+                        var li = document.createElement('li');
+                        li.setAttribute('role', 'option');
+                        if (i === 0) li.setAttribute('aria-selected', 'true');
+
+                        var labelSpan = document.createElement('span');
+                        labelSpan.appendChild(makeLabel(it.label, q));
+                        li.appendChild(labelSpan);
+
+                        var hintSpan = document.createElement('span');
+                        hintSpan.textContent = it.group;
+                        hintSpan.style.marginLeft = 'auto';
+                        hintSpan.style.fontSize = '11px';
+                        hintSpan.style.color = 'var(--fg-subtle)';
+                        li.appendChild(hintSpan);
+
+                        li.addEventListener('click', function() {
+                            go(it.href);
+                        });
+                        li.addEventListener('mousemove', function() {
+                            if (selected !== i) {
+                                selected = i;
+                                paint();
+                            }
+                        });
+
+                        results.appendChild(li);
+                    });
+                    paint();
+                }
+
+                function paint() {
+                    Array.prototype.forEach.call(results.children, function(li, i) {
+                        if (li.getAttribute('role') !== 'option') return;
+                        if (i === selected) li.setAttribute('aria-selected', 'true');
+                        else li.removeAttribute('aria-selected');
+                    });
+                }
+
+                function go(href) {
+                    close();
+                    var target = document.getElementById(href.slice(1));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: prefersReduced ? 'auto' : 'smooth',
+                            block: 'start'
+                        });
+                        history.replaceState(null, '', href);
+                    }
+                }
+
+                function open() {
+                    backdrop.hidden = false;
+                    requestAnimationFrame(function() {
+                        backdrop.classList.add('open');
+                    });
+                    input.value = '';
+                    render('');
+                    input.focus();
+                }
+
+                function close() {
+                    backdrop.classList.remove('open');
+                    setTimeout(function() {
+                        backdrop.hidden = true;
+                    }, 170);
+                }
+
+                input.addEventListener('input', function() {
+                    render(input.value);
+                });
+
+                input.addEventListener('keydown', function(ev) {
+                    if (ev.key === 'ArrowDown') {
+                        ev.preventDefault();
+                        if (current.length) {
+                            selected = (selected + 1) % current.length;
+                            paint();
+                        }
+                    } else if (ev.key === 'ArrowUp') {
+                        ev.preventDefault();
+                        if (current.length) {
+                            selected = (selected - 1 + current.length) % current.length;
+                            paint();
+                        }
+                    } else if (ev.key === 'Enter') {
+                        ev.preventDefault();
+                        if (current[selected]) go(current[selected].href);
+                    } else if (ev.key === 'Escape') {
+                        ev.preventDefault();
+                        close();
+                    }
+                });
+
+                backdrop.addEventListener('mousedown', function(ev) {
+                    if (ev.target === backdrop) close();
+                });
+
+                document.addEventListener('keydown', function(ev) {
+                    var tag = (ev.target.tagName || '').toLowerCase();
+                    var typing = tag === 'input' || tag === 'textarea' || ev.target.isContentEditable;
+                    if ((ev.key === 'k' || ev.key === 'K') && (ev.metaKey || ev.ctrlKey)) {
+                        ev.preventDefault();
+                        backdrop.hidden ? open() : close();
+                    } else if (ev.key === '/' && !typing && backdrop.hidden) {
+                        ev.preventDefault();
+                        open();
+                    }
+                });
+            })();
+
+            /* Newsletter */
+            (function() {
+                var form = document.getElementById('nlForm');
+                if (!form) return;
+                var email = document.getElementById('nlEmail');
+                var status = document.getElementById('nlStatus');
+                var submit = document.getElementById('nlSubmit');
+                var configured = form.getAttribute('action').indexOf('BUTTONDOWN_USERNAME') === -1;
+
+                form.addEventListener('submit', function(ev) {
+                    var value = email ? email.value.trim() : '';
+                    if (!value || !email.checkValidity()) {
+                        ev.preventDefault();
+                        if (status) {
+                            status.dataset.state = 'err';
+                            status.textContent = 'Enter a valid email address.';
+                        }
+                        if (email) email.focus();
+                        return;
+                    }
+                    if (!configured) {
+                        ev.preventDefault();
+                        form.dataset.state = 'done';
+                        if (status) {
+                            status.dataset.state = 'ok';
+                            status.textContent = 'Demo only — swap BUTTONDOWN_USERNAME in the form action to go live.';
+                        }
+                        if (submit) submit.disabled = true;
+                        return;
+                    }
+                    if (status) {
+                        status.dataset.state = 'pending';
+                        status.textContent = 'Opening Buttondown…';
+                    }
+                });
+            })();
+
+            /* On-scroll CTA */
+            (function() {
+                var cta = document.getElementById('scrollCta');
+                var up = document.getElementById('scrollUp');
+                var down = document.getElementById('scrollDown');
+                if (!cta) return;
+
+                var threshold = 400;
+                var ticking = false;
+
+                function update() {
+                    var y = window.scrollY || window.pageYOffset;
+                    var show = y > threshold;
+                    cta.classList.toggle('visible', show);
+                    cta.setAttribute('aria-hidden', show ? 'false' : 'true');
+                    ticking = false;
+                }
+
+                window.addEventListener('scroll', function() {
+                    if (!ticking) {
+                        requestAnimationFrame(update);
+                        ticking = true;
+                    }
+                }, {
+                    passive: true
+                });
+
+                function scrollTo(target) {
+                    window.scrollTo({
+                        top: target,
+                        behavior: prefersReduced ? 'auto' : 'smooth'
+                    });
+                }
+
+                if (up) {
+                    up.addEventListener('click', function() {
+                        scrollTo(0);
+                    });
+                }
+
+                if (down) {
+                    down.addEventListener('click', function() {
+                        scrollTo(document.documentElement.scrollHeight);
+                    });
+                }
+
+                update();
+            })();
+
+        })();
+    </script>
 </body>
+
 </html>
